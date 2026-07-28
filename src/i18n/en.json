@@ -1,0 +1,46 @@
+{
+  "tabs": {
+    "main": "Main",
+    "nutrition": "Nutrition",
+    "guide": "Guide",
+    "premium": "Premium"
+  },
+  "home": {
+    "title": "Choose your workout plan",
+    "subtitle": "Pick a program and train daily",
+    "program60": "60-Day Fat Burn Program",
+    "program90": "90-Day Full Body Program",
+    "health_overview": "Health overview"
+  },
+  "program": {
+    "daysPrefix": "Day {{day}} • {{weekday}}",
+    "completed": "Completed",
+    "todayWorkout": "Workout: {{name}}"
+  },
+  "workouts": {
+    "rest": "Recovery / Rest",
+    "hiit": "Full-body HIIT",
+    "upper": "Chest - Shoulder - Arms",
+    "lower": "Glutes - Legs",
+    "core": "Abs & Core"
+  },
+  "nutrition": {
+    "title": "Nutrition",
+    "content": "Suggested macros, water intake, and sample meals for each plan."
+  },
+  "guide": {
+    "title": "Guide",
+    "content": "How to use the app, watch videos, mark days completed, and track progress."
+  },
+  "premium": {
+    "title": "Go Premium",
+    "removeAds": "Remove all ads",
+    "allPrograms": "Unlock all programs",
+    "cta": "Upgrade now"
+  },
+  "video": {
+    "loading": "Loading video...",
+    "play": "Start workout",
+    "error": "Unable to play video. Please try again."
+  }
+}

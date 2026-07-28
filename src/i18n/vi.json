@@ -1,0 +1,45 @@
+{
+  "tabs": {
+    "main": "Main",
+    "nutrition": "Dinh dưỡng",
+    "guide": "Hướng dẫn",
+    "premium": "Premium"
+  },
+  "home": {
+    "title": "Chọn chương trình tập",
+    "subtitle": "Chọn 1 giáo án và luyện tập mỗi ngày",
+    "program60": "Giáo án Giảm mỡ 60 ngày",
+    "program90": "Giáo án Toàn thân 90 ngày"
+  },
+  "program": {
+    "daysPrefix": "Ngày {{day}} • {{weekday}}",
+    "completed": "Đã hoàn thành",
+    "todayWorkout": "Bài tập: {{name}}"
+  },
+  "workouts": {
+    "rest": "Nghỉ phục hồi",
+    "hiit": "HIIT toàn thân",
+    "upper": "Ngực - Vai - Tay",
+    "lower": "Mông - Đùi - Chân",
+    "core": "Cơ bụng & Core"
+  },
+  "nutrition": {
+    "title": "Dinh dưỡng",
+    "content": "Gợi ý khẩu phần, protein, nước, và thực đơn mẫu theo giáo án."
+  },
+  "guide": {
+    "title": "Hướng dẫn",
+    "content": "Hướng dẫn cách sử dụng app, cách xem video, đánh dấu ngày đã tập, và theo dõi tiến độ."
+  },
+  "premium": {
+    "title": "Nâng cấp Premium",
+    "removeAds": "Loại bỏ quảng cáo",
+    "allPrograms": "Mở khóa tất cả chương trình",
+    "cta": "Nâng cấp ngay"
+  },
+  "video": {
+    "loading": "Đang tải video...",
+    "play": "Bắt đầu tập",
+    "error": "Không phát được video. Vui lòng thử lại."
+  }
+}

@@ -1,0 +1,25 @@
+# Dependencies
+node_modules/
+
+# Android cache and build
+.gradle/
+.cxx/
+android/.gradle/
+android/.cxx/
+android/build/
+android/app/build/
+android/app/release/
+
+# Android output files
+*.apk
+*.aab
+
+# iOS
+ios/Pods/
+ios/build/
+*.ipa
+*.xcarchive
+
+# Misc
+.DS_Store
+*.log
