@@ -1,6 +1,17 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="CompilerConfiguration">
-    <bytecodeTargetLevel target="17" />
+    <bytecodeTargetLevel target="17">
+      <module name="android.Workout.notifee_react-native" target="21" />
+      <module name="android.Workout.react-native-async-storage_async-storage" target="21" />
+      <module name="android.Workout.react-native-blob-util" target="21" />
+      <module name="android.Workout.react-native-firebase_app" target="21" />
+      <module name="android.Workout.react-native-image-picker" target="21" />
+      <module name="android.Workout.react-native-in-app-review" target="21" />
+      <module name="android.Workout.react-native-pdf" target="21" />
+      <module name="android.Workout.react-native-sound-player" target="21" />
+      <module name="android.Workout.react-native-svg" target="21" />
+      <module name="android.Workout.sayem314_react-native-keep-awake" target="21" />
+    </bytecodeTargetLevel>
   </component>
 </project>

@@ -10,5 +10,5 @@ export const PREMIUM_ENABLED = false;
  * Chỉ giả lập Premium trong bản debug để test chức năng.
  * __DEV__ tự động là false trong bản release/App Store.
  */
-export const FORCE_PREMIUM_IN_DEBUG = __DEV__ && true;
+export const FORCE_PREMIUM_IN_DEBUG = true;
 //premium  export const FORCE_PREMIUM_IN_DEBUG = __DEV__ && false;;
