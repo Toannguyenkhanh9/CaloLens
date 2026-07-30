@@ -1,24 +1,45 @@
-import React, { useEffect, useState } from 'react';
+// FILE: src/screens/OnboardingProfileScreen.tsx
+import React, {
+  useEffect,
+  useMemo,
+  useState,
+} from 'react';
 import {
-  View,
-  Text,
-  StyleSheet,
   ActivityIndicator,
-  ImageBackground,
+  KeyboardAvoidingView,
+  Modal,
+  NativeModules,
+  Platform,
+  ScrollView,
+  StatusBar,
+  StyleSheet,
+  Text,
   TextInput,
   TouchableOpacity,
-  ScrollView,
-  KeyboardAvoidingView,
-  Platform,
-  Modal,
-  StatusBar,
+  View,
 } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
-import AsyncStorage from '@react-native-async-storage/async-storage';
-import { useTranslation } from 'react-i18next';
-import i18n, { LANG_KEY } from '../i18n';
+import {
+  SafeAreaView,
+} from 'react-native-safe-area-context';
+import AsyncStorage
+  from '@react-native-async-storage/async-storage';
+import {
+  useTranslation,
+} from 'react-i18next';
 
-type Gender = 'male' | 'female' | 'other';
+import i18n, {
+  LANG_KEY,
+} from '../i18n';
+import '../i18n/caloLensOnboardingTranslations';
+import {
+  markOnboardingCompleted,
+  USER_PROFILE_KEY,
+} from '../store/onboarding';
+
+type Gender =
+  | 'male'
+  | 'female'
+  | 'other';
 
 type Goal =
   | 'lose_weight'
@@ -27,6 +48,37 @@ type Goal =
   | 'recomp'
   | 'endurance'
   | 'flexibility';
+
+type BmiCategory =
+  | 'under'
+  | 'normal'
+  | 'over'
+  | 'obese'
+  | '';
+
+type LanguageCode =
+  | 'en'
+  | 'vi'
+  | 'es'
+  | 'fr'
+  | 'de'
+  | 'zh'
+  | 'ja'
+  | 'ko'
+  | 'ru'
+  | 'ar'
+  | 'hi'
+  | 'th'
+  | 'id'
+  | 'ms'
+  | 'fil'
+  | 'pt';
+
+type LanguageOption = {
+  code: LanguageCode;
+  label: string;
+  flag: string;
+};
 
 export type UserProfile = {
   name: string;
@@ -40,78 +92,352 @@ export type UserProfile = {
   goal?: Goal;
 };
 
-const STORAGE_KEY = 'user:profile';
-const ONBOARD_DONE = 'gymforge:onboarding:done';
-const BMI_KEY = 'user:bmi';
-const RECO_KEY = 'user:recommendation';
+const STORAGE_KEY =
+  USER_PROFILE_KEY;
+const BMI_KEY =
+  'user:bmi';
+const RECO_KEY =
+  'user:recommendation';
 
 const BG = '#F5F8F2';
-const CARD = 'rgba(255, 255, 255, 0.96)';
-const CARD_2 = 'rgba(240, 245, 237, 0.96)';
+const CARD = '#FFFFFF';
+const SOFT = '#F0F5ED';
 const TEXT = '#17211A';
 const MUTED = '#6D786F';
-const NEON = '#63C934';
-const CYAN = '#18A39B';
+const GREEN = '#63C934';
+const TEAL = '#18A39B';
+const BORDER = '#DDE8D9';
+const WARNING = '#D99A00';
 
-const ONBOARDING_BACKGROUND = require(
-  '../../assets/images/nutrition_hero.png',
-);
+const SUPPORTED_LANGUAGES:
+LanguageOption[] = [
+  {
+    code: 'en',
+    label: 'English',
+    flag: '🇺🇸',
+  },
+  {
+    code: 'vi',
+    label: 'Tiếng Việt',
+    flag: '🇻🇳',
+  },
+  {
+    code: 'es',
+    label: 'Español',
+    flag: '🇪🇸',
+  },
+  {
+    code: 'fr',
+    label: 'Français',
+    flag: '🇫🇷',
+  },
+  {
+    code: 'de',
+    label: 'Deutsch',
+    flag: '🇩🇪',
+  },
+  {
+    code: 'zh',
+    label: '中文',
+    flag: '🇨🇳',
+  },
+  {
+    code: 'ja',
+    label: '日本語',
+    flag: '🇯🇵',
+  },
+  {
+    code: 'ko',
+    label: '한국어',
+    flag: '🇰🇷',
+  },
+  {
+    code: 'ru',
+    label: 'Русский',
+    flag: '🇷🇺',
+  },
+  {
+    code: 'ar',
+    label: 'العربية',
+    flag: '🇸🇦',
+  },
+  {
+    code: 'hi',
+    label: 'हिन्दी',
+    flag: '🇮🇳',
+  },
+  {
+    code: 'th',
+    label: 'ไทย',
+    flag: '🇹🇭',
+  },
+  {
+    code: 'id',
+    label: 'Bahasa Indonesia',
+    flag: '🇮🇩',
+  },
+  {
+    code: 'ms',
+    label: 'Bahasa Melayu',
+    flag: '🇲🇾',
+  },
+  {
+    code: 'fil',
+    label: 'Filipino',
+    flag: '🇵🇭',
+  },
+  {
+    code: 'pt',
+    label: 'Português',
+    flag: '🇵🇹',
+  },
+];
+
+const goalIcons:
+Record<Goal, string> = {
+  lose_weight: '↓',
+  build_muscle: '💪',
+  maintain: '⚖️',
+  recomp: '◐',
+  endurance: '⚡',
+  flexibility: '🧘',
+};
+
+const parseNumber = (
+  value: string,
+) => {
+  const parsed =
+    Number(
+      value
+        .replace(',', '.')
+        .replace(
+          /[^0-9.]/g,
+          '',
+        ),
+    );
+
+  return Number.isFinite(
+    parsed,
+  )
+    ? parsed
+    : undefined;
+};
+
+const normalizeLanguage = (
+  rawLanguage?: string | null,
+): LanguageCode => {
+  const normalized =
+    String(
+      rawLanguage || '',
+    )
+      .trim()
+      .toLowerCase()
+      .replace('_', '-');
+
+  const base =
+    normalized
+      .split('-')[0];
+
+  if (
+    base === 'tl' ||
+    base === 'fil'
+  ) {
+    return 'fil';
+  }
+
+  const supported =
+    SUPPORTED_LANGUAGES
+      .some(
+        item =>
+          item.code === base,
+      );
+
+  return supported
+    ? base as LanguageCode
+    : 'en';
+};
+
+const getDeviceLanguage =
+  (): LanguageCode => {
+    try {
+      const iosSettings =
+        NativeModules
+          .SettingsManager
+          ?.settings;
+
+      const iosLanguage =
+        iosSettings
+          ?.AppleLanguages
+          ?.[0] ||
+        iosSettings
+          ?.AppleLocale;
+
+      const androidLanguage =
+        NativeModules
+          .I18nManager
+          ?.localeIdentifier;
+
+      const intlLanguage =
+        Intl
+          .DateTimeFormat()
+          .resolvedOptions()
+          .locale;
+
+      return normalizeLanguage(
+        Platform.OS === 'ios'
+          ? iosLanguage ||
+            intlLanguage
+          : androidLanguage ||
+            intlLanguage,
+      );
+    } catch (error) {
+      console.log(
+        '[CaloLens] detect device language error',
+        error,
+      );
+
+      return 'en';
+    }
+  };
 
 export default function OnboardingProfileScreen({
   onDone,
 }: {
   onDone?: () => void;
 }) {
-  const { t } = useTranslation();
+  const {t} =
+    useTranslation();
 
-  const [languageReady, setLanguageReady] =
+  const [
+    languageReady,
+    setLanguageReady,
+  ] =
     useState(false);
 
-  const [step, setStep] = useState<1 | 2 | 3>(1);
-  const [data, setData] = useState<UserProfile>({
-    name: '',
-    injured: false,
-  });
-  const [saving, setSaving] = useState(false);
+  const [
+    selectedLanguage,
+    setSelectedLanguage,
+  ] =
+    useState<LanguageCode>(
+      'en',
+    );
 
-  const [showResult, setShowResult] = useState(false);
-  const [bmiValue, setBmiValue] = useState<number | null>(null);
-  const [bmiLabel, setBmiLabel] = useState<string>('');
-  const [advice, setAdvice] = useState<string>('');
+  const [
+    showLanguagePicker,
+    setShowLanguagePicker,
+  ] =
+    useState(false);
+
+  const [
+    step,
+    setStep,
+  ] =
+    useState<1 | 2 | 3>(
+      1,
+    );
+
+  const [
+    data,
+    setData,
+  ] =
+    useState<UserProfile>({
+      name: '',
+      injured: false,
+    });
+
+  const [
+    saving,
+    setSaving,
+  ] =
+    useState(false);
+
+  const [
+    showResult,
+    setShowResult,
+  ] =
+    useState(false);
+
+  const [
+    bmiValue,
+    setBmiValue,
+  ] =
+    useState<number | null>(
+      null,
+    );
+
+  const [
+    bmiLabel,
+    setBmiLabel,
+  ] =
+    useState('');
+
+  const [
+    advice,
+    setAdvice,
+  ] =
+    useState('');
 
   useEffect(() => {
     let mounted = true;
 
-    const restoreLanguage = async () => {
-      try {
-        const savedLanguage =
-          await AsyncStorage.getItem(LANG_KEY);
+    const restoreLanguage =
+      async () => {
+        try {
+          const saved =
+            await AsyncStorage
+              .getItem(
+                LANG_KEY,
+              );
 
-        if (
-          savedLanguage &&
-          i18n.language !== savedLanguage
-        ) {
-          await i18n.changeLanguage(
-            savedLanguage,
+          const language =
+            saved
+              ? normalizeLanguage(
+                  saved,
+                )
+              : getDeviceLanguage();
+
+          setSelectedLanguage(
+            language,
           );
-        }
 
-        console.log(
-          '[CaloLens] onboarding language',
-          i18n.resolvedLanguage ||
-            i18n.language,
-        );
-      } catch (error) {
-        console.log(
-          '[CaloLens] restore language error',
-          error,
-        );
-      } finally {
-        if (mounted) {
-          setLanguageReady(true);
+          if (!saved) {
+            await AsyncStorage
+              .setItem(
+                LANG_KEY,
+                language,
+              );
+          }
+
+          if (
+            normalizeLanguage(
+              i18n.resolvedLanguage ||
+              i18n.language,
+            ) !== language
+          ) {
+            await i18n
+              .changeLanguage(
+                language,
+              );
+          }
+
+          console.log(
+            '[CaloLens] onboarding language',
+            i18n.resolvedLanguage ||
+              i18n.language,
+          );
+        } catch (error) {
+          console.log(
+            '[CaloLens] restore language error',
+            error,
+          );
+        } finally {
+          if (mounted) {
+            setLanguageReady(
+              true,
+            );
+          }
         }
-      }
-    };
+      };
 
     restoreLanguage();
 
@@ -120,542 +446,1421 @@ export default function OnboardingProfileScreen({
     };
   }, []);
 
-  const setField = <K extends keyof UserProfile>(k: K, v: UserProfile[K]) =>
-    setData((p) => ({
-      ...p,
-      [k]: v,
+  const setField = <
+    K extends keyof UserProfile,
+  >(
+    key: K,
+    value: UserProfile[K],
+  ) => {
+    setData(current => ({
+      ...current,
+      [key]: value,
     }));
+  };
 
-  const basicOk = data.name.trim().length >= 2 && !!data.gender && !!data.age;
-  const metricOk = !!data.heightCm && !!data.weightKg;
-  const allOk = basicOk && metricOk && !!data.goal;
+  const currentLanguage =
+    SUPPORTED_LANGUAGES
+      .find(
+        item =>
+          item.code ===
+          selectedLanguage,
+      ) ||
+    SUPPORTED_LANGUAGES[0];
 
-  function bmiCategory(heightCm?: number, weightKg?: number) {
-    if (!heightCm || !weightKg) {
-      return {
-        bmi: null as number | null,
-        key: '' as 'under' | 'normal' | 'over' | 'obese' | '',
-      };
-    }
+  const changeLanguage =
+    async (
+      language: LanguageCode,
+    ) => {
+      try {
+        setSelectedLanguage(
+          language,
+        );
 
-    const h = heightCm / 100;
-    const bmi = +(weightKg / (h * h)).toFixed(1);
+        await AsyncStorage
+          .setItem(
+            LANG_KEY,
+            language,
+          );
 
-    let key: 'under' | 'normal' | 'over' | 'obese' = 'normal';
+        await i18n
+          .changeLanguage(
+            language,
+          );
 
-    if (bmi < 18.5) key = 'under';
-    else if (bmi < 25) key = 'normal';
-    else if (bmi < 30) key = 'over';
-    else key = 'obese';
+        setShowLanguagePicker(
+          false,
+        );
 
-    return { bmi, key };
-  }
-
-  function buildAdvice(
-    bmi: number | null,
-    catKey: 'under' | 'normal' | 'over' | 'obese' | '',
-    p: UserProfile,
-  ) {
-    const lines: string[] = [];
-
-    const labelMap: Record<string, string> = {
-      under: t('onboard.bmi_label_under'),
-      normal: t('onboard.bmi_label_normal'),
-      over: t('onboard.bmi_label_over'),
-      obese: t('onboard.bmi_label_obese'),
+        console.log(
+          '[CaloLens] language changed',
+          language,
+        );
+      } catch (error) {
+        console.log(
+          '[CaloLens] change language error',
+          error,
+        );
+      }
     };
 
-    const label = catKey ? labelMap[catKey] : '';
+  const basicOk =
+    data.name
+      .trim()
+      .length >= 2 &&
+    Boolean(data.gender) &&
+    Boolean(
+      data.age &&
+      data.age >= 13 &&
+      data.age <= 100,
+    );
 
-    if (bmi !== null) {
-      lines.push(t('onboard.advice_intro', { bmi, label }));
-    }
+  const metricOk =
+    Boolean(
+      data.heightCm &&
+      data.heightCm >= 100 &&
+      data.heightCm <= 250,
+    ) &&
+    Boolean(
+      data.weightKg &&
+      data.weightKg >= 25 &&
+      data.weightKg <= 400,
+    );
 
-    if (catKey === 'under') lines.push(t('onboard.advice_bmi_under'));
-    if (catKey === 'normal') lines.push(t('onboard.advice_bmi_normal'));
-    if (catKey === 'over') lines.push(t('onboard.advice_bmi_over'));
-    if (catKey === 'obese') lines.push(t('onboard.advice_bmi_obese'));
+  const allOk =
+    basicOk &&
+    metricOk &&
+    Boolean(data.goal);
 
-    if (p.goal) {
-      const mapGoal: Record<string, string> = {
-        lose_weight: t('onboard.advice_goal_lose_weight'),
-        build_muscle: t('onboard.advice_goal_build_muscle'),
-        maintain: t('onboard.advice_goal_maintain'),
-        recomp: t('onboard.advice_goal_recomp'),
-        endurance: t('onboard.advice_goal_endurance'),
-        flexibility: t('onboard.advice_goal_flexibility'),
-      };
-
-      lines.push(mapGoal[p.goal]);
-    }
-
-    if (p.injured) {
-      lines.push(t('onboard.advice_injured'));
-    }
-
-    if (p.healthNote?.trim()) {
-      lines.push(t('onboard.advice_healthnote'));
-    }
-
-    return lines.join('\n');
-  }
-
-  const save = async () => {
-    if (!allOk || saving) return;
-
-    try {
-      setSaving(true);
-
-      await AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(data));
-
-      const { bmi, key } = bmiCategory(data.heightCm, data.weightKg);
-      const adv = buildAdvice(bmi, key, data);
-
-      setBmiValue(bmi);
-      setBmiLabel(
-        key
-          ? {
-              under: t('onboard.bmi_label_under'),
-              normal: t('onboard.bmi_label_normal'),
-              over: t('onboard.bmi_label_over'),
-              obese: t('onboard.bmi_label_obese'),
-            }[key]
-          : '',
-      );
-
-      setAdvice(adv);
-
-      if (bmi !== null) {
-        await AsyncStorage.setItem(BMI_KEY, String(bmi));
+  const stepMeta =
+    useMemo(() => {
+      if (step === 1) {
+        return {
+          icon: '👤',
+          title: t(
+            'caloLensOnboarding.step1Title',
+            'About you',
+          ),
+          subtitle: t(
+            'caloLensOnboarding.step1Subtitle',
+            'Basic details help personalize your daily nutrition target.',
+          ),
+        };
       }
 
-      await AsyncStorage.setItem(RECO_KEY, adv);
+      if (step === 2) {
+        return {
+          icon: '📏',
+          title: t(
+            'caloLensOnboarding.step2Title',
+            'Body measurements',
+          ),
+          subtitle: t(
+            'caloLensOnboarding.step2Subtitle',
+            'Height and weight are used to estimate calories and BMI.',
+          ),
+        };
+      }
 
-      setShowResult(true);
-    } finally {
-      setSaving(false);
+      return {
+        icon: '🎯',
+        title: t(
+          'caloLensOnboarding.step3Title',
+          'Choose your goal',
+        ),
+        subtitle: t(
+          'caloLensOnboarding.step3Subtitle',
+          'Your goal changes the calorie and macro guidance shown in CaloLens.',
+        ),
+      };
+    }, [
+      step,
+      t,
+    ]);
+
+  const bmiCategory = (
+    heightCm?: number,
+    weightKg?: number,
+  ) => {
+    if (
+      !heightCm ||
+      !weightKg
+    ) {
+      return {
+        bmi:
+          null as number | null,
+        key:
+          '' as BmiCategory,
+      };
     }
+
+    const height =
+      heightCm / 100;
+
+    const bmi =
+      +(
+        weightKg /
+        (
+          height *
+          height
+        )
+      ).toFixed(1);
+
+    let key:
+      Exclude<
+        BmiCategory,
+        ''
+      > = 'normal';
+
+    if (bmi < 18.5) {
+      key = 'under';
+    } else if (bmi < 25) {
+      key = 'normal';
+    } else if (bmi < 30) {
+      key = 'over';
+    } else {
+      key = 'obese';
+    }
+
+    return {
+      bmi,
+      key,
+    };
   };
 
-  const finishAndEnterApp = async () => {
-    await AsyncStorage.setItem(ONBOARD_DONE, '1');
-    onDone?.();
+  const getBmiLabel = (
+    category: BmiCategory,
+  ) => {
+    if (!category) {
+      return '';
+    }
+
+    const labels = {
+      under: t(
+        'onboard.bmi_label_under',
+        'Underweight',
+      ),
+      normal: t(
+        'onboard.bmi_label_normal',
+        'Healthy range',
+      ),
+      over: t(
+        'onboard.bmi_label_over',
+        'Overweight',
+      ),
+      obese: t(
+        'onboard.bmi_label_obese',
+        'High BMI',
+      ),
+    };
+
+    return labels[category];
   };
+
+  const buildAdvice = (
+    bmi: number | null,
+    category: BmiCategory,
+    profile: UserProfile,
+  ) => {
+    const lines: string[] = [];
+
+    if (bmi !== null) {
+      lines.push(
+        t(
+          'caloLensOnboarding.adviceIntro',
+          {
+            bmi,
+            label:
+              getBmiLabel(
+                category,
+              ),
+            defaultValue:
+              'Your estimated BMI is {{bmi}} ({{label}}).',
+          },
+        ),
+      );
+    }
+
+    const bmiAdvice:
+      Partial<
+        Record<
+          Exclude<
+            BmiCategory,
+            ''
+          >,
+          string
+        >
+      > = {
+      under: t(
+        'caloLensOnboarding.adviceUnder',
+        'A gradual calorie surplus with enough protein may support healthy weight gain.',
+      ),
+      normal: t(
+        'caloLensOnboarding.adviceNormal',
+        'Focus on consistent meals, protein, fiber and hydration.',
+      ),
+      over: t(
+        'caloLensOnboarding.adviceOver',
+        'A moderate calorie deficit and regular meal tracking may support fat loss.',
+      ),
+      obese: t(
+        'caloLensOnboarding.adviceObese',
+        'Start with realistic nutrition changes and consider professional guidance.',
+      ),
+    };
+
+    if (category) {
+      lines.push(
+        bmiAdvice[
+          category
+        ] || '',
+      );
+    }
+
+    if (profile.goal) {
+      const goalAdvice:
+        Record<
+          Goal,
+          string
+        > = {
+        lose_weight: t(
+          'caloLensOnboarding.goalAdviceLose',
+          'CaloLens will prioritize a controlled calorie deficit and adequate protein.',
+        ),
+        build_muscle: t(
+          'caloLensOnboarding.goalAdviceMuscle',
+          'CaloLens will emphasize protein and enough calories to support muscle growth.',
+        ),
+        maintain: t(
+          'caloLensOnboarding.goalAdviceMaintain',
+          'CaloLens will aim for stable calories and balanced macros.',
+        ),
+        recomp: t(
+          'caloLensOnboarding.goalAdviceRecomp',
+          'CaloLens will emphasize protein and a controlled calorie target for body recomposition.',
+        ),
+        endurance: t(
+          'caloLensOnboarding.goalAdviceEndurance',
+          'CaloLens will keep sufficient carbohydrates and hydration in your daily plan.',
+        ),
+        flexibility: t(
+          'caloLensOnboarding.goalAdviceWellness',
+          'CaloLens will focus on balanced nutrition that supports recovery and daily movement.',
+        ),
+      };
+
+      lines.push(
+        goalAdvice[
+          profile.goal
+        ],
+      );
+    }
+
+    if (profile.injured) {
+      lines.push(
+        t(
+          'caloLensOnboarding.adviceInjury',
+          'Nutrition guidance does not replace medical advice for an injury.',
+        ),
+      );
+    }
+
+    return lines
+      .filter(Boolean)
+      .join('\n\n');
+  };
+
+  const save =
+    async () => {
+      if (
+        !allOk ||
+        saving
+      ) {
+        return;
+      }
+
+      try {
+        setSaving(true);
+
+        await AsyncStorage
+          .setItem(
+            STORAGE_KEY,
+            JSON.stringify(data),
+          );
+
+        const {
+          bmi,
+          key,
+        } =
+          bmiCategory(
+            data.heightCm,
+            data.weightKg,
+          );
+
+        const recommendation =
+          buildAdvice(
+            bmi,
+            key,
+            data,
+          );
+
+        setBmiValue(bmi);
+        setBmiLabel(
+          getBmiLabel(key),
+        );
+        setAdvice(
+          recommendation,
+        );
+
+        if (bmi !== null) {
+          await AsyncStorage
+            .setItem(
+              BMI_KEY,
+              String(bmi),
+            );
+        }
+
+        await AsyncStorage
+          .setItem(
+            RECO_KEY,
+            recommendation,
+          );
+
+        await markOnboardingCompleted();
+
+        console.log(
+          '[CaloLens] onboarding saved',
+          {
+            completed: true,
+          },
+        );
+
+        setShowResult(true);
+      } catch (error) {
+        console.log(
+          '[CaloLens] onboarding save error',
+          error,
+        );
+      } finally {
+        setSaving(false);
+      }
+    };
+
+  const finishAndEnterApp =
+    () => {
+      setShowResult(false);
+      onDone?.();
+
+      void markOnboardingCompleted()
+        .catch(error => {
+          console.log(
+            '[CaloLens] finish onboarding error',
+            error,
+          );
+        });
+    };
 
   if (!languageReady) {
     return (
-      <SafeAreaView style={s.safe}>
-        <ImageBackground
-          source={ONBOARDING_BACKGROUND}
-          resizeMode="cover"
-          style={s.background}
-          imageStyle={s.backgroundImage}
-        >
-          <View
-            pointerEvents="none"
-            style={s.backgroundOverlay}
-          />
-
-          <View style={s.languageLoading}>
-            <ActivityIndicator
-              size="large"
-              color={NEON}
-            />
-
-            <Text style={s.languageLoadingText}>
-              {t(
-                'UserProfile.loading',
-                'Loading…',
-              )}
-            </Text>
-          </View>
-        </ImageBackground>
-      </SafeAreaView>
-    );
-  }
-
-  return (
-    <SafeAreaView style={s.safe}>
-      <ImageBackground
-        source={ONBOARDING_BACKGROUND}
-        resizeMode="cover"
-        style={s.background}
-        imageStyle={s.backgroundImage}
-      >
+      <SafeAreaView style={styles.safe}>
         <StatusBar
           barStyle="dark-content"
           backgroundColor={BG}
         />
 
-        <View
-          pointerEvents="none"
-          style={s.backgroundOverlay}
-        />
-
-        <View pointerEvents="none" style={s.glowTop} />
-        <View pointerEvents="none" style={s.glowBottom} />
-
-        <KeyboardAvoidingView
-        behavior={Platform.OS === 'ios' ? 'padding' : undefined}
-        style={{ flex: 1 }}
-      >
-        <View style={s.header}>
-          <View style={s.kickerPill}>
-            <Text style={s.kickerText}>
-              {t(
-                'UserProfile.title',
-                'User Profile',
-              ).toUpperCase()}
+        <View style={styles.loading}>
+          <View style={styles.logoMark}>
+            <Text style={styles.logoMarkText}>
+              ◉
             </Text>
           </View>
 
-          <Text style={s.title}>
-            {t('onboard.title', 'Create your profile')}
-          </Text>
+          <ActivityIndicator
+            size="large"
+            color={GREEN}
+          />
 
-          <Text style={s.subtitle}>
+          <Text style={styles.loadingText}>
             {t(
-              'onboard.subtitle',
-              'Tell us a little about yourself to personalize your workout plan.',
+              'UserProfile.loading',
+              'Loading…',
             )}
           </Text>
+        </View>
+      </SafeAreaView>
+    );
+  }
 
-          <View style={s.steps}>
-            <Dot active={step >= 1} />
-            <Dot active={step >= 2} />
-            <Dot active={step >= 3} />
+  return (
+    <SafeAreaView style={styles.safe}>
+      <StatusBar
+        barStyle="dark-content"
+        backgroundColor={BG}
+      />
+
+      <View
+        pointerEvents="none"
+        style={styles.glowTop}
+      />
+
+      <View
+        pointerEvents="none"
+        style={styles.glowBottom}
+      />
+
+      <KeyboardAvoidingView
+        style={styles.flex}
+        behavior={
+          Platform.OS === 'ios'
+            ? 'padding'
+            : undefined
+        }
+      >
+        <View style={styles.header}>
+          <View style={styles.brandRow}>
+            <View style={styles.logoMarkSmall}>
+              <Text style={styles.logoMarkSmallText}>
+                ◉
+              </Text>
+            </View>
+
+            <View style={styles.brandText}>
+              <Text style={styles.brandName}>
+                CaloLens
+              </Text>
+
+              <Text style={styles.brandCaption}>
+                {t(
+                  'caloLensOnboarding.brandCaption',
+                  'AI nutrition companion',
+                )}
+              </Text>
+            </View>
+
+            <View style={styles.headerActions}>
+              <TouchableOpacity
+                activeOpacity={0.84}
+                style={styles.languageButton}
+                onPress={() =>
+                  setShowLanguagePicker(
+                    true,
+                  )
+                }
+                accessibilityRole="button"
+                accessibilityLabel={t(
+                  'caloLensOnboarding.chooseLanguage',
+                  'Choose language',
+                )}
+              >
+                <Text style={styles.languageButtonFlag}>
+                  {currentLanguage.flag}
+                </Text>
+
+                <Text style={styles.languageButtonCode}>
+                  {currentLanguage.code
+                    .toUpperCase()}
+                </Text>
+
+                <Text style={styles.languageButtonChevron}>
+                  ▾
+                </Text>
+              </TouchableOpacity>
+
+              <View style={styles.stepPill}>
+                <Text style={styles.stepPillText}>
+                  {step}/3
+                </Text>
+              </View>
+            </View>
+          </View>
+
+          <View style={styles.progressTrack}>
+            <View
+              style={[
+                styles.progressFill,
+                {
+                  width:
+                    `${step / 3 * 100}%`,
+                },
+              ]}
+            />
           </View>
         </View>
 
         <ScrollView
-          contentContainerStyle={s.body}
+          contentContainerStyle={
+            styles.content
+          }
           keyboardShouldPersistTaps="handled"
-          showsVerticalScrollIndicator={false}
+          showsVerticalScrollIndicator={
+            false
+          }
         >
-          <View style={s.formCard}>
-            {step === 1 ? (
-              <View>
-                <Text style={s.stepTitle}>
-                  {t(
-                    'UserProfile.title',
-                    'User Profile',
-                  )}
-                </Text>
+          <View style={styles.heroCard}>
+            <View style={styles.heroIcon}>
+              <Text style={styles.heroIconText}>
+                {stepMeta.icon}
+              </Text>
+            </View>
 
-                <Label>{t('onboard.name')}</Label>
+            <View style={styles.heroText}>
+              <Text style={styles.kicker}>
+                {t(
+                  'caloLensOnboarding.kicker',
+                  'PERSONAL SETUP',
+                )}
+              </Text>
+
+              <Text style={styles.title}>
+                {stepMeta.title}
+              </Text>
+
+              <Text style={styles.subtitle}>
+                {stepMeta.subtitle}
+              </Text>
+            </View>
+          </View>
+
+          <View style={styles.card}>
+            {step === 1 ? (
+              <>
+                <Label>
+                  {t(
+                    'onboard.name',
+                    'Name',
+                  )}
+                </Label>
+
                 <Input
-                  placeholder=""
                   value={data.name}
-                  onChangeText={(v) => setField('name', v)}
+                  onChangeText={value =>
+                    setField(
+                      'name',
+                      value,
+                    )
+                  }
+                  placeholder={t(
+                    'caloLensOnboarding.namePlaceholder',
+                    'How should we call you?',
+                  )}
+                  autoCapitalize="words"
                 />
 
-                <View style={s.row}>
-                  <View style={s.col}>
-                    <Label>{t('onboard.age')}</Label>
-                    <Input
-                      placeholder=""
-                      keyboardType="number-pad"
-                      value={data.age ? String(data.age) : ''}
-                      onChangeText={(v) =>
-                        setField(
-                          'age',
-                          v ? parseInt(v, 10) || undefined : undefined,
-                        )
-                      }
-                    />
-                  </View>
+                <Label>
+                  {t(
+                    'onboard.gender',
+                    'Gender',
+                  )}
+                </Label>
 
-                  <View style={s.col}>
-                    <Label>{t('onboard.gender')}</Label>
-                    <Segment
-                      value={data.gender}
-                      options={[
-                        { key: 'male', label: t('onboard.gender_male') },
-                        { key: 'female', label: t('onboard.gender_female') },
-                        { key: 'other', label: t('onboard.gender_other') },
-                      ]}
-                      onChange={(g) => setField('gender', g as Gender)}
-                    />
-                  </View>
+                <Segment
+                  value={data.gender}
+                  options={[
+                    {
+                      key: 'male',
+                      label: t(
+                        'onboard.gender_male',
+                        'Male',
+                      ),
+                    },
+                    {
+                      key: 'female',
+                      label: t(
+                        'onboard.gender_female',
+                        'Female',
+                      ),
+                    },
+                    {
+                      key: 'other',
+                      label: t(
+                        'onboard.gender_other',
+                        'Other',
+                      ),
+                    },
+                  ]}
+                  onChange={value =>
+                    setField(
+                      'gender',
+                      value as Gender,
+                    )
+                  }
+                />
+
+                <Label>
+                  {t(
+                    'onboard.age',
+                    'Age',
+                  )}
+                </Label>
+
+                <Input
+                  value={
+                    data.age
+                      ? String(
+                          data.age,
+                        )
+                      : ''
+                  }
+                  onChangeText={value =>
+                    setField(
+                      'age',
+                      value
+                        ? Math.round(
+                            parseNumber(
+                              value,
+                            ) || 0,
+                          ) ||
+                          undefined
+                        : undefined,
+                    )
+                  }
+                  placeholder={t(
+                    'caloLensOnboarding.agePlaceholder',
+                    'e.g. 28',
+                  )}
+                  keyboardType="number-pad"
+                />
+
+                <View style={styles.optionalRow}>
+                  <Label noMargin>
+                    {t(
+                      'caloLensOnboarding.healthNote',
+                      'Health note',
+                    )}
+                  </Label>
+
+                  <Text style={styles.optionalText}>
+                    {t(
+                      'caloLensOnboarding.optional',
+                      'Optional',
+                    )}
+                  </Text>
                 </View>
 
-                <Label>{t('onboard.health')}</Label>
                 <Input
-                  placeholder=""
-                  value={data.healthNote || ''}
-                  onChangeText={(v) => setField('healthNote', v)}
+                  value={
+                    data.healthNote ||
+                    ''
+                  }
+                  onChangeText={value =>
+                    setField(
+                      'healthNote',
+                      value,
+                    )
+                  }
+                  placeholder={t(
+                    'caloLensOnboarding.healthPlaceholder',
+                    'Anything that may affect your nutrition plan',
+                  )}
                   multiline
-                  style={{ height: 96, textAlignVertical: 'top' }}
+                  style={styles.multiline}
                 />
-              </View>
+
+                <View style={styles.privacyCard}>
+                  <Text style={styles.privacyIcon}>
+                    🔒
+                  </Text>
+
+                  <Text style={styles.privacyText}>
+                    {t(
+                      'caloLensOnboarding.localNote',
+                      'Your profile is stored locally on this device.',
+                    )}
+                  </Text>
+                </View>
+              </>
             ) : null}
 
             {step === 2 ? (
-              <View>
-                <Text style={s.stepTitle}>
-                  {`${t(
-                    'UserProfile.height_label',
-                    'Height (cm)',
-                  )} • ${t(
-                    'UserProfile.weight_label',
-                    'Weight (kg)',
-                  )}`}
-                </Text>
-
-                <View style={s.row}>
-                  <View style={s.col}>
-                    <Label>{t('onboard.height')}</Label>
-                    <Input
-                      placeholder={t(
-                        'UserProfile.height_ph',
-                        'e.g. 170',
+              <>
+                <View style={styles.metricRow}>
+                  <View style={styles.metricCol}>
+                    <Label>
+                      {t(
+                        'UserProfile.height_label',
+                        'Height (cm)',
                       )}
-                      keyboardType="number-pad"
-                      value={data.heightCm ? String(data.heightCm) : ''}
-                      onChangeText={(v) =>
+                    </Label>
+
+                    <Input
+                      value={
+                        data.heightCm
+                          ? String(
+                              data.heightCm,
+                            )
+                          : ''
+                      }
+                      onChangeText={value =>
                         setField(
                           'heightCm',
-                          v ? parseFloat(v) || undefined : undefined,
+                          value
+                            ? parseNumber(
+                                value,
+                              )
+                            : undefined,
                         )
                       }
+                      placeholder="170"
+                      keyboardType="decimal-pad"
                     />
                   </View>
 
-                  <View style={s.col}>
-                    <Label>{t('onboard.weight')}</Label>
-                    <Input
-                      placeholder={t(
-                        'UserProfile.weight_ph',
-                        'e.g. 65.5',
+                  <View style={styles.metricGap} />
+
+                  <View style={styles.metricCol}>
+                    <Label>
+                      {t(
+                        'UserProfile.weight_label',
+                        'Weight (kg)',
                       )}
-                      keyboardType="decimal-pad"
-                      value={data.weightKg ? String(data.weightKg) : ''}
-                      onChangeText={(v) =>
+                    </Label>
+
+                    <Input
+                      value={
+                        data.weightKg
+                          ? String(
+                              data.weightKg,
+                            )
+                          : ''
+                      }
+                      onChangeText={value =>
                         setField(
                           'weightKg',
-                          v ? parseFloat(v) || undefined : undefined,
+                          value
+                            ? parseNumber(
+                                value,
+                              )
+                            : undefined,
                         )
                       }
+                      placeholder="65.5"
+                      keyboardType="decimal-pad"
                     />
                   </View>
                 </View>
 
-                <View style={s.switchRow}>
-                  <View style={{ flex: 1 }}>
-                    <Text style={s.label}>{t('onboard.injured_q')}</Text>
-                    <Text style={s.smallHint}>
+                <View style={styles.infoCard}>
+                  <View style={styles.infoIcon}>
+                    <Text style={styles.infoIconText}>
+                      ✦
+                    </Text>
+                  </View>
+
+                  <View style={styles.infoText}>
+                    <Text style={styles.infoTitle}>
                       {t(
-                        'onboard.injuredHint',
-                        'We will adjust recommendations if you have injuries.',
+                        'caloLensOnboarding.measurementTitle',
+                        'Used for your daily targets',
+                      )}
+                    </Text>
+
+                    <Text style={styles.infoBody}>
+                      {t(
+                        'caloLensOnboarding.measurementBody',
+                        'CaloLens uses these measurements to estimate calories, macros and BMI.',
+                      )}
+                    </Text>
+                  </View>
+                </View>
+
+                <View style={styles.switchRow}>
+                  <View style={styles.switchText}>
+                    <Text style={styles.switchTitle}>
+                      {t(
+                        'onboard.injured_q',
+                        'Do you have an injury?',
+                      )}
+                    </Text>
+
+                    <Text style={styles.switchHint}>
+                      {t(
+                        'caloLensOnboarding.injuryHint',
+                        'This note helps keep recommendations in context.',
                       )}
                     </Text>
                   </View>
 
                   <SwitchLike
-                    value={!!data.injured}
-                    onToggle={(v) => setField('injured', v)}
+                    value={
+                      Boolean(
+                        data.injured,
+                      )
+                    }
+                    onToggle={value =>
+                      setField(
+                        'injured',
+                        value,
+                      )
+                    }
                   />
                 </View>
 
                 {data.injured ? (
                   <>
-                    <Label>{t('onboard.injury_note')}</Label>
+                    <Label>
+                      {t(
+                        'onboard.injury_note',
+                        'Injury note',
+                      )}
+                    </Label>
+
                     <Input
-                      placeholder=""
-                      value={data.injuryNote || ''}
-                      onChangeText={(v) => setField('injuryNote', v)}
+                      value={
+                        data.injuryNote ||
+                        ''
+                      }
+                      onChangeText={value =>
+                        setField(
+                          'injuryNote',
+                          value,
+                        )
+                      }
+                      placeholder={t(
+                        'caloLensOnboarding.injuryPlaceholder',
+                        'Briefly describe the injury',
+                      )}
                       multiline
-                      style={{ height: 96, textAlignVertical: 'top' }}
+                      style={styles.multiline}
                     />
                   </>
                 ) : null}
-              </View>
+              </>
             ) : null}
 
             {step === 3 ? (
-              <View>
-                <Text style={s.stepTitle}>
-                  {t(
-                    'onboard.goal',
-                    'Current goal',
-                  )}
-                </Text>
-
-                <Label>{t('onboard.goal')}</Label>
-
-                <ChipGroup
+              <>
+                <GoalGrid
                   value={data.goal}
-                  onChange={(g) => setField('goal', g as Goal)}
+                  onChange={value =>
+                    setField(
+                      'goal',
+                      value,
+                    )
+                  }
                   options={[
                     {
-                      key: 'lose_weight',
-                      label: t('onboard.goals.lose_weight'),
+                      key:
+                        'lose_weight',
+                      icon:
+                        goalIcons
+                          .lose_weight,
+                      label: t(
+                        'onboard.goals.lose_weight',
+                        'Lose weight',
+                      ),
                     },
                     {
-                      key: 'build_muscle',
-                      label: t('onboard.goals.build_muscle'),
+                      key:
+                        'build_muscle',
+                      icon:
+                        goalIcons
+                          .build_muscle,
+                      label: t(
+                        'onboard.goals.build_muscle',
+                        'Build muscle',
+                      ),
                     },
                     {
-                      key: 'maintain',
-                      label: t('onboard.goals.maintain'),
+                      key:
+                        'maintain',
+                      icon:
+                        goalIcons
+                          .maintain,
+                      label: t(
+                        'onboard.goals.maintain',
+                        'Maintain',
+                      ),
                     },
                     {
-                      key: 'recomp',
-                      label: t('onboard.goals.recomp'),
+                      key:
+                        'recomp',
+                      icon:
+                        goalIcons
+                          .recomp,
+                      label: t(
+                        'onboard.goals.recomp',
+                        'Body recomposition',
+                      ),
                     },
                     {
-                      key: 'endurance',
-                      label: t('onboard.goals.endurance'),
+                      key:
+                        'endurance',
+                      icon:
+                        goalIcons
+                          .endurance,
+                      label: t(
+                        'onboard.goals.endurance',
+                        'Endurance',
+                      ),
                     },
                     {
-                      key: 'flexibility',
-                      label: t('onboard.goals.flexibility'),
+                      key:
+                        'flexibility',
+                      icon:
+                        goalIcons
+                          .flexibility,
+                      label: t(
+                        'onboard.goals.flexibility',
+                        'General wellness',
+                      ),
                     },
                   ]}
                 />
 
-                <TipCard />
-              </View>
+                <View style={styles.tipCard}>
+                  <View style={styles.tipIcon}>
+                    <Text style={styles.tipIconText}>
+                      ✦
+                    </Text>
+                  </View>
+
+                  <View style={styles.tipText}>
+                    <Text style={styles.tipTitle}>
+                      {t(
+                        'caloLensOnboarding.tipTitle',
+                        'You can change this later',
+                      )}
+                    </Text>
+
+                    <Text style={styles.tipBody}>
+                      {t(
+                        'caloLensOnboarding.tipBody',
+                        'Update your profile or calorie target at any time from Settings.',
+                      )}
+                    </Text>
+                  </View>
+                </View>
+              </>
             ) : null}
           </View>
         </ScrollView>
 
-        <View style={s.footer}>
+        <View style={styles.footer}>
           {step > 1 ? (
             <TouchableOpacity
-              style={[s.footBtn, s.ghost]}
-              onPress={() => setStep((x) => (x === 3 ? 2 : 1))}
               activeOpacity={0.86}
+              style={[
+                styles.footerButton,
+                styles.backButton,
+              ]}
+              onPress={() =>
+                setStep(current =>
+                  current === 3
+                    ? 2
+                    : 1,
+                )
+              }
             >
-              <Text style={[s.footTxt, s.ghostTxt]}>
-                {t('onboard.back')}
+              <Text style={styles.backButtonText}>
+                {t(
+                  'onboard.back',
+                  'Back',
+                )}
               </Text>
             </TouchableOpacity>
           ) : (
-            <View style={{ flex: 1 }} />
+            <View style={styles.footerPlaceholder} />
           )}
 
           {step < 3 ? (
             <TouchableOpacity
-              style={[
-                s.footBtn,
-                (step === 1 && basicOk) || (step === 2 && metricOk)
-                  ? s.primary
-                  : s.disabled,
-              ]}
-              onPress={() => setStep((x) => (x === 1 ? 2 : 3))}
-              disabled={(step === 1 && !basicOk) || (step === 2 && !metricOk)}
               activeOpacity={0.86}
+              style={[
+                styles.footerButton,
+                (
+                  step === 1
+                    ? basicOk
+                    : metricOk
+                )
+                  ? styles.nextButton
+                  : styles.disabledButton,
+              ]}
+              disabled={
+                step === 1
+                  ? !basicOk
+                  : !metricOk
+              }
+              onPress={() =>
+                setStep(current =>
+                  current === 1
+                    ? 2
+                    : 3,
+                )
+              }
             >
               <Text
                 style={[
-                  s.footTxt,
-                  {
-                    color:
-                      (step === 1 && basicOk) || (step === 2 && metricOk)
-                        ? BG
-                        : MUTED,
-                  },
+                  styles.nextButtonText,
+                  !(
+                    step === 1
+                      ? basicOk
+                      : metricOk
+                  ) &&
+                    styles.disabledText,
                 ]}
               >
-                {t('onboard.next')}
+                {t(
+                  'onboard.next',
+                  'Next',
+                )}
               </Text>
             </TouchableOpacity>
           ) : (
             <TouchableOpacity
-              style={[s.footBtn, allOk ? s.primary : s.disabled]}
-              onPress={save}
-              disabled={!allOk || saving}
               activeOpacity={0.86}
+              style={[
+                styles.footerButton,
+                allOk
+                  ? styles.nextButton
+                  : styles.disabledButton,
+              ]}
+              disabled={
+                !allOk ||
+                saving
+              }
+              onPress={save}
             >
-              <Text
-                style={[
-                  s.footTxt,
-                  {
-                    color: allOk ? BG : MUTED,
-                  },
-                ]}
-              >
-                {saving ? t('onboard.saving') : t('onboard.finish')}
-              </Text>
+              {saving ? (
+                <ActivityIndicator
+                  color="#10230F"
+                />
+              ) : (
+                <Text
+                  style={[
+                    styles.nextButtonText,
+                    !allOk &&
+                      styles.disabledText,
+                  ]}
+                >
+                  {t(
+                    'caloLensOnboarding.finish',
+                    'Create my plan',
+                  )}
+                </Text>
+              )}
             </TouchableOpacity>
           )}
         </View>
       </KeyboardAvoidingView>
 
       <Modal
+        visible={
+          showLanguagePicker
+        }
+        transparent
+        animationType="fade"
+        onRequestClose={() =>
+          setShowLanguagePicker(
+            false,
+          )
+        }
+      >
+        <View style={styles.languageModalWrap}>
+          <TouchableOpacity
+            activeOpacity={1}
+            style={styles.languageBackdrop}
+            onPress={() =>
+              setShowLanguagePicker(
+                false,
+              )
+            }
+          />
+
+          <View style={styles.languageModalCard}>
+            <View style={styles.languageModalHeader}>
+              <View style={styles.languageModalTitleWrap}>
+                <Text style={styles.languageModalTitle}>
+                  {t(
+                    'caloLensOnboarding.chooseLanguage',
+                    'Choose language',
+                  )}
+                </Text>
+
+                <Text style={styles.languageModalSubtitle}>
+                  {t(
+                    'caloLensOnboarding.languageSubtitle',
+                    'The app language changes immediately and is saved for next time.',
+                  )}
+                </Text>
+              </View>
+
+              <TouchableOpacity
+                activeOpacity={0.82}
+                style={styles.languageCloseButton}
+                onPress={() =>
+                  setShowLanguagePicker(
+                    false,
+                  )
+                }
+              >
+                <Text style={styles.languageCloseText}>
+                  ×
+                </Text>
+              </TouchableOpacity>
+            </View>
+
+            <ScrollView
+              style={styles.languageList}
+              contentContainerStyle={
+                styles.languageListContent
+              }
+              showsVerticalScrollIndicator={
+                false
+              }
+            >
+              {SUPPORTED_LANGUAGES
+                .map(item => {
+                  const active =
+                    item.code ===
+                    selectedLanguage;
+
+                  return (
+                    <TouchableOpacity
+                      key={item.code}
+                      activeOpacity={0.84}
+                      style={[
+                        styles.languageItem,
+                        active &&
+                          styles.languageItemActive,
+                      ]}
+                      onPress={() =>
+                        void changeLanguage(
+                          item.code,
+                        )
+                      }
+                    >
+                      <Text style={styles.languageItemFlag}>
+                        {item.flag}
+                      </Text>
+
+                      <View style={styles.languageItemBody}>
+                        <Text
+                          style={[
+                            styles.languageItemLabel,
+                            active &&
+                              styles.languageItemLabelActive,
+                          ]}
+                        >
+                          {item.label}
+                        </Text>
+
+                        <Text style={styles.languageItemCode}>
+                          {item.code
+                            .toUpperCase()}
+                        </Text>
+                      </View>
+
+                      <View
+                        style={[
+                          styles.languageCheck,
+                          active &&
+                            styles.languageCheckActive,
+                        ]}
+                      >
+                        <Text style={styles.languageCheckText}>
+                          {active
+                            ? '✓'
+                            : ''}
+                        </Text>
+                      </View>
+                    </TouchableOpacity>
+                  );
+                })}
+            </ScrollView>
+          </View>
+        </View>
+      </Modal>
+
+      <Modal
         visible={showResult}
         transparent
         animationType="fade"
-        onRequestClose={() => setShowResult(false)}
+        onRequestClose={() => {}}
       >
-        <View style={s.modalWrap}>
-          <View style={s.backdrop} />
+        <View style={styles.modalWrap}>
+          <View style={styles.backdrop} />
 
-          <View style={s.resultCard}>
-            <View style={s.resultIcon}>
-              <Text style={s.resultIconText}>📊</Text>
+          <View style={styles.resultCard}>
+            <View style={styles.resultIcon}>
+              <Text style={styles.resultIconText}>
+                ✓
+              </Text>
             </View>
 
-            <Text style={s.resultTitle}>
-              {t('onboard.bmi_result_title')}
+            <Text style={styles.resultKicker}>
+              {t(
+                'caloLensOnboarding.readyKicker',
+                'YOUR PLAN IS READY',
+              )}
             </Text>
 
-            <Text style={s.resultBMI}>
-              {t('onboard.bmi', 'BMI')}: {bmiValue ?? '—'} {bmiLabel ? `(${bmiLabel})` : ''}
+            <Text style={styles.resultTitle}>
+              {t(
+                'caloLensOnboarding.readyTitle',
+                'Welcome to CaloLens',
+              )}
             </Text>
 
-            <View style={s.adviceBox}>
-              <Text style={s.adviceText}>{advice}</Text>
+            <Text style={styles.resultSubtitle}>
+              {t(
+                'caloLensOnboarding.readySubtitle',
+                'Your calorie and nutrition guidance can now be calculated from this profile.',
+              )}
+            </Text>
+
+            <View style={styles.bmiCard}>
+              <View>
+                <Text style={styles.bmiCaption}>
+                  {t(
+                    'onboard.bmi',
+                    'BMI',
+                  )}
+                </Text>
+
+                <Text style={styles.bmiNumber}>
+                  {bmiValue ??
+                    '—'}
+                </Text>
+              </View>
+
+              <View style={styles.bmiPill}>
+                <Text style={styles.bmiPillText}>
+                  {bmiLabel ||
+                    t(
+                      'caloLensOnboarding.estimated',
+                      'Estimated',
+                    )}
+                </Text>
+              </View>
             </View>
+
+            <View style={styles.adviceCard}>
+              <Text style={styles.adviceTitle}>
+                {t(
+                  'caloLensOnboarding.startingGuidance',
+                  'Starting guidance',
+                )}
+              </Text>
+
+              <ScrollView
+                style={styles.adviceScroll}
+                showsVerticalScrollIndicator={
+                  false
+                }
+              >
+                <Text style={styles.adviceText}>
+                  {advice}
+                </Text>
+              </ScrollView>
+            </View>
+
+            <Text style={styles.disclaimer}>
+              {t(
+                'caloLensOnboarding.disclaimer',
+                'BMI and nutrition targets are estimates for general wellness and are not medical advice.',
+              )}
+            </Text>
 
             <TouchableOpacity
-              style={s.modalBtn}
-              onPress={finishAndEnterApp}
               activeOpacity={0.86}
+              style={styles.startButton}
+              onPress={
+                finishAndEnterApp
+              }
             >
-              <Text style={s.modalBtnText}>
-                {t('onboard.start_training', 'Start training')}
+              <Text style={styles.startButtonText}>
+                {t(
+                  'caloLensOnboarding.startTracking',
+                  'Start tracking',
+                )}
               </Text>
             </TouchableOpacity>
           </View>
         </View>
-        </Modal>
-      </ImageBackground>
+      </Modal>
     </SafeAreaView>
   );
 }
 
-const Label: React.FC<{ children: React.ReactNode }> = ({ children }) => (
-  <Text style={s.label}>{children}</Text>
+const Label:
+React.FC<{
+  children:
+    React.ReactNode;
+  noMargin?: boolean;
+}> = ({
+  children,
+  noMargin = false,
+}) => (
+  <Text
+    style={[
+      styles.label,
+      noMargin &&
+        styles.labelNoMargin,
+    ]}
+  >
+    {children}
+  </Text>
 );
 
-const Input: React.FC<React.ComponentProps<typeof TextInput>> = (props) => (
+const Input:
+React.FC<
+  React.ComponentProps<
+    typeof TextInput
+  >
+> = props => (
   <TextInput
     {...props}
-    placeholderTextColor="rgba(109, 120, 111, 0.68)"
-    style={[s.input, props.style]}
+    placeholderTextColor="#8A948C"
+    style={[
+      styles.input,
+      props.style,
+    ]}
   />
 );
 
-const Segment: React.FC<{
+const Segment:
+React.FC<{
   value?: string;
-  options: { key: string; label: string }[];
-  onChange: (v: string) => void;
-}> = ({ value, options, onChange }) => (
-  <View style={s.segmentWrap}>
-    {options.map((o) => {
-      const active = value === o.key;
+  options:
+    Array<{
+      key: string;
+      label: string;
+    }>;
+  onChange: (
+    value: string,
+  ) => void;
+}> = ({
+  value,
+  options,
+  onChange,
+}) => (
+  <View style={styles.segment}>
+    {options.map(option => {
+      const active =
+        value === option.key;
 
       return (
         <TouchableOpacity
-          key={o.key}
-          onPress={() => onChange(o.key)}
-          style={[s.segmentItem, active && s.segmentActive]}
+          key={option.key}
           activeOpacity={0.86}
+          style={[
+            styles.segmentItem,
+            active &&
+              styles.segmentItemActive,
+          ]}
+          onPress={() =>
+            onChange(
+              option.key,
+            )
+          }
         >
-          <Text style={[s.segmentText, active && s.segmentTextActive]}>
-            {o.label}
+          <Text
+            style={[
+              styles.segmentText,
+              active &&
+                styles.segmentTextActive,
+            ]}
+          >
+            {option.label}
           </Text>
         </TouchableOpacity>
       );
@@ -663,450 +1868,995 @@ const Segment: React.FC<{
   </View>
 );
 
-const ChipGroup: React.FC<{
-  value?: string;
-  options: { key: string; label: string }[];
-  onChange: (v: string) => void;
-}> = ({ value, options, onChange }) => (
-  <View style={s.chips}>
-    {options.map((o) => {
-      const active = value === o.key;
+const GoalGrid:
+React.FC<{
+  value?: Goal;
+  options:
+    Array<{
+      key: Goal;
+      icon: string;
+      label: string;
+    }>;
+  onChange: (
+    value: Goal,
+  ) => void;
+}> = ({
+  value,
+  options,
+  onChange,
+}) => (
+  <View style={styles.goalGrid}>
+    {options.map(option => {
+      const active =
+        value === option.key;
 
       return (
         <TouchableOpacity
-          key={o.key}
-          onPress={() => onChange(o.key)}
-          style={[s.chip, active && s.chipActive]}
+          key={option.key}
           activeOpacity={0.86}
+          style={[
+            styles.goalCard,
+            active &&
+              styles.goalCardActive,
+          ]}
+          onPress={() =>
+            onChange(
+              option.key,
+            )
+          }
         >
-          <Text style={[s.chipTxt, active && s.chipTxtActive]}>
-            {o.label}
+          <View
+            style={[
+              styles.goalIcon,
+              active &&
+                styles.goalIconActive,
+            ]}
+          >
+            <Text style={styles.goalIconText}>
+              {option.icon}
+            </Text>
+          </View>
+
+          <Text
+            style={[
+              styles.goalText,
+              active &&
+                styles.goalTextActive,
+            ]}
+          >
+            {option.label}
           </Text>
+
+          <View
+            style={[
+              styles.goalCheck,
+              active &&
+                styles.goalCheckActive,
+            ]}
+          >
+            <Text style={styles.goalCheckText}>
+              {active
+                ? '✓'
+                : ''}
+            </Text>
+          </View>
         </TouchableOpacity>
       );
     })}
   </View>
 );
 
-const SwitchLike: React.FC<{
+const SwitchLike:
+React.FC<{
   value: boolean;
-  onToggle: (v: boolean) => void;
-}> = ({ value, onToggle }) => (
+  onToggle: (
+    value: boolean,
+  ) => void;
+}> = ({
+  value,
+  onToggle,
+}) => (
   <TouchableOpacity
-    onPress={() => onToggle(!value)}
-    style={[s.switch, value && s.switchOn]}
     activeOpacity={0.85}
+    style={[
+      styles.switch,
+      value &&
+        styles.switchOn,
+    ]}
+    onPress={() =>
+      onToggle(!value)
+    }
   >
-    <View style={[s.switchDot, value && s.switchDotOn]} />
+    <View
+      style={[
+        styles.switchDot,
+        value &&
+          styles.switchDotOn,
+      ]}
+    />
   </TouchableOpacity>
 );
 
-const TipCard: React.FC = () => {
-  const { t } = useTranslation();
-
-  return (
-    <View style={s.tip}>
-      <View style={s.tipIcon}>
-        <Text style={s.tipIconText}>💡</Text>
-      </View>
-
-      <View style={{ flex: 1 }}>
-        <Text style={s.tipTitle}>{t('onboard.tip_title')}</Text>
-        <Text style={s.tipTxt}>{t('onboard.tip_1')}</Text>
-        <Text style={s.tipTxt}>{t('onboard.tip_2')}</Text>
-      </View>
-    </View>
-  );
-};
-
-function Dot({ active }: { active: boolean }) {
-  return <View style={[s.dot, active && s.dotActive]} />;
-}
-
-const s = StyleSheet.create({
-  safe: {
-    flex: 1,
-    backgroundColor: BG,
-  },
-  background: {
-    flex: 1,
-  },
-  backgroundImage: {
-    opacity: 0.88,
-  },
-  backgroundOverlay: {
-    ...StyleSheet.absoluteFillObject,
-    backgroundColor: 'rgba(248, 251, 246, 0.66)',
-  },
-  languageLoading: {
-    flex: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  languageLoadingText: {
-    color: TEXT,
-    fontSize: 14,
-    fontWeight: '800',
-    marginTop: 12,
-  },
-  glowTop: {
-    position: 'absolute',
-    top: -90,
-    right: -90,
-    width: 260,
-    height: 260,
-    borderRadius: 130,
-    backgroundColor: 'rgba(24, 163, 155, 0.11)',
-  },
-  glowBottom: {
-    position: 'absolute',
-    bottom: 40,
-    left: -110,
-    width: 250,
-    height: 250,
-    borderRadius: 125,
-    backgroundColor: 'rgba(99, 201, 52, 0.08)',
-  },
-
-  header: {
-    paddingHorizontal: 8,
-    paddingTop: 16,
-    paddingBottom: 8,
-  },
-  kickerPill: {
-    alignSelf: 'flex-start',
-    paddingHorizontal: 12,
-    paddingVertical: 6,
-    borderRadius: 999,
-    borderWidth: 1,
-    borderColor: 'rgba(24, 163, 155, 0.45)',
-    backgroundColor: 'rgba(24, 163, 155, 0.10)',
-    marginBottom: 14,
-  },
-  kickerText: {
-    color: CYAN,
-    fontSize: 11,
-    fontWeight: '900',
-    letterSpacing: 1.2,
-  },
-  title: {
-    color: TEXT,
-    fontSize: 34,
-    lineHeight: 40,
-    fontWeight: '900',
-    textShadowColor: 'transparent',
-    textShadowOffset: { width: 0, height: 2 },
-    textShadowRadius: 8,
-  },
-  subtitle: {
-    color: '#455047',
-    marginTop: 8,
-    fontSize: 15,
-    lineHeight: 22,
-    textShadowColor: 'transparent',
-    textShadowOffset: { width: 0, height: 1 },
-    textShadowRadius: 6,
-  },
-  steps: {
-    flexDirection: 'row',
-    gap: 7,
-    marginTop: 16,
-  },
-  dot: {
-    width: 30,
-    height: 7,
-    borderRadius: 999,
-    backgroundColor: 'rgba(109, 120, 111, 0.26)',
-  },
-  dotActive: {
-    backgroundColor: NEON,
-  },
-
-  body: {
-    paddingHorizontal: 8,
-    paddingTop: 10,
-    paddingBottom: 26,
-  },
-  formCard: {
-    backgroundColor: 'rgba(255, 255, 255, 0.94)',
-    borderRadius: 24,
-    padding: 16,
-    borderWidth: 1,
-    borderColor: 'rgba(24, 163, 155, 0.26)',
-    shadowColor: '#18A39B',
-    shadowOpacity: 0.16,
-    shadowRadius: 16,
-    shadowOffset: { width: 0, height: 8 },
-    elevation: 8,
-  },
-  stepTitle: {
-    color: TEXT,
-    fontSize: 20,
-    fontWeight: '900',
-    marginBottom: 14,
-  },
-
-  label: {
-    color: '#526057',
-    fontWeight: '900',
-    marginBottom: 7,
-    fontSize: 13,
-  },
-  smallHint: {
-    color: MUTED,
-    fontSize: 12,
-    marginTop: 2,
-    lineHeight: 17,
-  },
-  input: {
-    backgroundColor: 'rgba(255, 255, 255, 0.92)',
-    borderRadius: 15,
-    borderWidth: 1,
-    borderColor: 'rgba(109, 120, 111, 0.20)',
-    paddingHorizontal: 13,
-    paddingVertical: 11,
-    color: TEXT,
-    fontSize: 14,
-    marginBottom: 12,
-  },
-
-  row: {
-    flexDirection: 'row',
-    gap: 12,
-  },
-  col: {
-    flex: 1,
-  },
-
-  segmentWrap: {
-    flexDirection: 'row',
-    backgroundColor: 'rgba(255, 255, 255, 0.92)',
-    borderRadius: 15,
-    padding: 3,
-    borderWidth: 1,
-    borderColor: 'rgba(109, 120, 111, 0.20)',
-    marginBottom: 12,
-  },
-  segmentItem: {
-    flex: 1,
-    borderRadius: 12,
-    paddingVertical: 9,
-    alignItems: 'center',
-  },
-  segmentActive: {
-    backgroundColor: NEON,
-  },
-  segmentText: {
-    color: MUTED,
-    fontWeight: '800',
-    fontSize: 12,
-  },
-  segmentTextActive: {
-    color: '#10230F',
-    fontWeight: '900',
-  },
-
-  switchRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: 'rgba(255, 255, 255, 0.92)',
-    borderRadius: 16,
-    padding: 13,
-    borderWidth: 1,
-    borderColor: 'rgba(109, 120, 111, 0.18)',
-    marginBottom: 12,
-    marginTop: 4,
-  },
-
-  switch: {
-    width: 54,
-    height: 32,
-    borderRadius: 999,
-    backgroundColor: 'rgba(109, 120, 111, 0.26)',
-    padding: 3,
-    justifyContent: 'center',
-  },
-  switchOn: {
-    backgroundColor: 'rgba(99, 201, 52, 0.36)',
-  },
-  switchDot: {
-    width: 26,
-    height: 26,
-    borderRadius: 13,
-    backgroundColor: '#455047',
-    transform: [{ translateX: 0 }],
-  },
-  switchDotOn: {
-    backgroundColor: NEON,
-    transform: [{ translateX: 22 }],
-  },
-
-  chips: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: 9,
-    marginTop: 6,
-  },
-  chip: {
-    paddingHorizontal: 13,
-    paddingVertical: 9,
-    borderRadius: 999,
-    backgroundColor: 'rgba(255, 255, 255, 0.92)',
-    borderWidth: 1,
-    borderColor: 'rgba(109, 120, 111, 0.20)',
-  },
-  chipActive: {
-    backgroundColor: NEON,
-    borderColor: NEON,
-  },
-  chipTxt: {
-    color: '#526057',
-    fontWeight: '800',
-  },
-  chipTxtActive: {
-    color: '#10230F',
-    fontWeight: '900',
-  },
-
-  tip: {
-    flexDirection: 'row',
-    marginTop: 16,
-    backgroundColor: 'rgba(24, 163, 155, 0.08)',
-    borderRadius: 18,
-    borderWidth: 1,
-    borderColor: 'rgba(24, 163, 155, 0.24)',
-    padding: 13,
-  },
-  tipIcon: {
-    width: 42,
-    height: 42,
-    borderRadius: 21,
-    alignItems: 'center',
-    justifyContent: 'center',
-    backgroundColor: 'rgba(24, 163, 155, 0.11)',
-    borderWidth: 1,
-    borderColor: 'rgba(24, 163, 155, 0.30)',
-    marginRight: 11,
-  },
-  tipIconText: {
-    fontSize: 21,
-  },
-  tipTitle: {
-    color: TEXT,
-    fontWeight: '900',
-    marginBottom: 6,
-  },
-  tipTxt: {
-    color: MUTED,
-    marginTop: 3,
-    lineHeight: 19,
-  },
-
-  footer: {
-    flexDirection: 'row',
-    gap: 12,
-    paddingHorizontal: 8,
-    paddingTop: 8,
-    paddingBottom: 18,
-    backgroundColor: 'rgba(255, 255, 255, 0.90)',
-    borderTopWidth: 1,
-    borderTopColor: 'rgba(24, 163, 155, 0.11)',
-  },
-  footBtn: {
-    flex: 1,
-    paddingVertical: 13,
-    borderRadius: 15,
-    alignItems: 'center',
-    borderWidth: 1,
-  },
-  primary: {
-    backgroundColor: NEON,
-    borderColor: NEON,
-  },
-  disabled: {
-    backgroundColor: 'rgba(255, 255, 255, 0.92)',
-    borderColor: 'rgba(109, 120, 111, 0.18)',
-  },
-  ghost: {
-    backgroundColor: 'rgba(255, 255, 255, 0.92)',
-    borderColor: 'rgba(24, 163, 155, 0.30)',
-  },
-  footTxt: {
-    fontWeight: '900',
-    fontSize: 14,
-  },
-  ghostTxt: {
-    color: CYAN,
-  },
-
-  modalWrap: {
-    flex: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  backdrop: {
-    ...StyleSheet.absoluteFillObject,
-    backgroundColor: 'rgba(0,0,0,0.68)',
-  },
-  resultCard: {
-    width: '88%',
-    backgroundColor: 'rgba(255, 255, 255, 0.96)',
-    borderRadius: 24,
-    padding: 18,
-    borderWidth: 1,
-    borderColor: 'rgba(99, 201, 52, 0.34)',
-  },
-  resultIcon: {
-    width: 58,
-    height: 58,
-    borderRadius: 29,
-    backgroundColor: 'rgba(99, 201, 52, 0.12)',
-    borderWidth: 1,
-    borderColor: 'rgba(99, 201, 52, 0.42)',
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginBottom: 12,
-  },
-  resultIconText: {
-    fontSize: 28,
-  },
-  resultTitle: {
-    fontSize: 20,
-    fontWeight: '900',
-    color: TEXT,
-  },
-  resultBMI: {
-    marginTop: 7,
-    color: NEON,
-    fontWeight: '900',
-  },
-  adviceBox: {
-    marginTop: 12,
-    backgroundColor: 'rgba(255, 255, 255, 0.92)',
-    borderRadius: 16,
-    padding: 13,
-    borderWidth: 1,
-    borderColor: 'rgba(109, 120, 111, 0.18)',
-  },
-  adviceText: {
-    color: '#455047',
-    lineHeight: 21,
-  },
-  modalBtn: {
-    marginTop: 14,
-    alignSelf: 'stretch',
-    backgroundColor: NEON,
-    borderColor: NEON,
-    borderWidth: 1,
-    borderRadius: 15,
-    paddingVertical: 13,
-    minHeight: 46,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  modalBtnText: {
-    color: '#10230F',
-    fontWeight: '900',
-    fontSize: 15,
-  },
-});
+const styles =
+  StyleSheet.create({
+    flex: {
+      flex: 1,
+    },
+    safe: {
+      flex: 1,
+      backgroundColor: BG,
+    },
+    glowTop: {
+      position: 'absolute',
+      top: -100,
+      right: -95,
+      width: 280,
+      height: 280,
+      borderRadius: 140,
+      backgroundColor:
+        'rgba(24, 163, 155, 0.08)',
+    },
+    glowBottom: {
+      position: 'absolute',
+      bottom: 60,
+      left: -125,
+      width: 280,
+      height: 280,
+      borderRadius: 140,
+      backgroundColor:
+        'rgba(99, 201, 52, 0.08)',
+    },
+    loading: {
+      flex: 1,
+      alignItems: 'center',
+      justifyContent: 'center',
+    },
+    logoMark: {
+      width: 64,
+      height: 64,
+      borderRadius: 21,
+      alignItems: 'center',
+      justifyContent: 'center',
+      backgroundColor:
+        'rgba(99, 201, 52, 0.12)',
+      borderWidth: 1,
+      borderColor:
+        'rgba(99, 201, 52, 0.30)',
+      marginBottom: 18,
+    },
+    logoMarkText: {
+      color: TEAL,
+      fontSize: 32,
+      fontWeight: '900',
+    },
+    loadingText: {
+      color: MUTED,
+      fontSize: 13,
+      fontWeight: '800',
+      marginTop: 11,
+    },
+    header: {
+      paddingHorizontal: 13,
+      paddingTop: 9,
+      paddingBottom: 9,
+    },
+    brandRow: {
+      flexDirection: 'row',
+      alignItems: 'center',
+    },
+    logoMarkSmall: {
+      width: 43,
+      height: 43,
+      borderRadius: 14,
+      alignItems: 'center',
+      justifyContent: 'center',
+      backgroundColor: GREEN,
+      shadowColor: GREEN,
+      shadowOpacity: 0.18,
+      shadowRadius: 8,
+      shadowOffset: {
+        width: 0,
+        height: 3,
+      },
+      elevation: 3,
+    },
+    logoMarkSmallText: {
+      color: '#10230F',
+      fontSize: 23,
+      fontWeight: '900',
+    },
+    brandText: {
+      flex: 1,
+      marginLeft: 10,
+    },
+    brandName: {
+      color: TEXT,
+      fontSize: 18,
+      fontWeight: '900',
+    },
+    brandCaption: {
+      color: MUTED,
+      fontSize: 9,
+      fontWeight: '800',
+      marginTop: 2,
+    },
+    headerActions: {
+      flexDirection: 'row',
+      alignItems: 'center',
+    },
+    languageButton: {
+      minHeight: 37,
+      flexDirection: 'row',
+      alignItems: 'center',
+      paddingHorizontal: 9,
+      borderRadius: 999,
+      backgroundColor: CARD,
+      borderWidth: 1,
+      borderColor: BORDER,
+      marginRight: 6,
+    },
+    languageButtonFlag: {
+      fontSize: 15,
+      marginRight: 5,
+    },
+    languageButtonCode: {
+      color: TEXT,
+      fontSize: 10,
+      fontWeight: '900',
+    },
+    languageButtonChevron: {
+      color: MUTED,
+      fontSize: 10,
+      fontWeight: '900',
+      marginLeft: 4,
+      marginTop: -2,
+    },
+    stepPill: {
+      minWidth: 48,
+      paddingHorizontal: 10,
+      paddingVertical: 7,
+      alignItems: 'center',
+      borderRadius: 999,
+      backgroundColor: CARD,
+      borderWidth: 1,
+      borderColor: BORDER,
+    },
+    stepPillText: {
+      color: TEAL,
+      fontSize: 11,
+      fontWeight: '900',
+    },
+    progressTrack: {
+      height: 6,
+      borderRadius: 999,
+      overflow: 'hidden',
+      backgroundColor: '#E5ECE2',
+      marginTop: 10,
+    },
+    progressFill: {
+      height: '100%',
+      borderRadius: 999,
+      backgroundColor: GREEN,
+    },
+    content: {
+      paddingHorizontal: 8,
+      paddingTop: 6,
+      paddingBottom: 28,
+    },
+    heroCard: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      backgroundColor:
+        'rgba(255, 255, 255, 0.88)',
+      borderRadius: 22,
+      borderWidth: 1,
+      borderColor:
+        'rgba(24, 163, 155, 0.18)',
+      padding: 14,
+      marginBottom: 11,
+    },
+    heroIcon: {
+      width: 55,
+      height: 55,
+      borderRadius: 18,
+      alignItems: 'center',
+      justifyContent: 'center',
+      backgroundColor:
+        'rgba(99, 201, 52, 0.11)',
+      borderWidth: 1,
+      borderColor:
+        'rgba(99, 201, 52, 0.25)',
+      marginRight: 12,
+    },
+    heroIconText: {
+      fontSize: 25,
+    },
+    heroText: {
+      flex: 1,
+    },
+    kicker: {
+      color: TEAL,
+      fontSize: 9,
+      fontWeight: '900',
+      letterSpacing: 1,
+    },
+    title: {
+      color: TEXT,
+      fontSize: 24,
+      lineHeight: 29,
+      fontWeight: '900',
+      marginTop: 3,
+    },
+    subtitle: {
+      color: MUTED,
+      fontSize: 11,
+      lineHeight: 17,
+      marginTop: 5,
+    },
+    card: {
+      backgroundColor: CARD,
+      borderRadius: 23,
+      padding: 15,
+      borderWidth: 1,
+      borderColor: BORDER,
+      shadowColor: '#879487',
+      shadowOpacity: 0.08,
+      shadowRadius: 12,
+      shadowOffset: {
+        width: 0,
+        height: 4,
+      },
+      elevation: 3,
+    },
+    label: {
+      color: TEXT,
+      fontSize: 11,
+      fontWeight: '900',
+      marginBottom: 7,
+    },
+    labelNoMargin: {
+      marginBottom: 0,
+    },
+    optionalRow: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      justifyContent: 'space-between',
+      marginBottom: 7,
+    },
+    optionalText: {
+      color: MUTED,
+      fontSize: 9,
+      fontWeight: '800',
+    },
+    input: {
+      minHeight: 49,
+      backgroundColor: '#F7FAF5',
+      borderRadius: 15,
+      borderWidth: 1,
+      borderColor: BORDER,
+      paddingHorizontal: 12,
+      paddingVertical: 10,
+      color: TEXT,
+      fontSize: 14,
+      fontWeight: '700',
+      marginBottom: 12,
+    },
+    multiline: {
+      height: 88,
+      textAlignVertical: 'top',
+    },
+    segment: {
+      flexDirection: 'row',
+      backgroundColor: '#F7FAF5',
+      borderRadius: 15,
+      padding: 3,
+      borderWidth: 1,
+      borderColor: BORDER,
+      marginBottom: 12,
+    },
+    segmentItem: {
+      flex: 1,
+      minHeight: 39,
+      borderRadius: 12,
+      alignItems: 'center',
+      justifyContent: 'center',
+      paddingHorizontal: 4,
+    },
+    segmentItemActive: {
+      backgroundColor: GREEN,
+      shadowColor: GREEN,
+      shadowOpacity: 0.16,
+      shadowRadius: 6,
+      elevation: 2,
+    },
+    segmentText: {
+      color: MUTED,
+      fontSize: 10,
+      fontWeight: '800',
+      textAlign: 'center',
+    },
+    segmentTextActive: {
+      color: '#10230F',
+      fontWeight: '900',
+    },
+    privacyCard: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      backgroundColor:
+        'rgba(24, 163, 155, 0.07)',
+      borderRadius: 14,
+      borderWidth: 1,
+      borderColor:
+        'rgba(24, 163, 155, 0.18)',
+      padding: 10,
+    },
+    privacyIcon: {
+      fontSize: 14,
+      marginRight: 7,
+    },
+    privacyText: {
+      flex: 1,
+      color: MUTED,
+      fontSize: 9,
+      lineHeight: 14,
+    },
+    metricRow: {
+      flexDirection: 'row',
+    },
+    metricCol: {
+      flex: 1,
+    },
+    metricGap: {
+      width: 10,
+    },
+    infoCard: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      backgroundColor:
+        'rgba(24, 163, 155, 0.07)',
+      borderRadius: 16,
+      borderWidth: 1,
+      borderColor:
+        'rgba(24, 163, 155, 0.20)',
+      padding: 11,
+      marginBottom: 12,
+    },
+    infoIcon: {
+      width: 37,
+      height: 37,
+      borderRadius: 13,
+      alignItems: 'center',
+      justifyContent: 'center',
+      backgroundColor:
+        'rgba(24, 163, 155, 0.11)',
+      marginRight: 9,
+    },
+    infoIconText: {
+      color: TEAL,
+      fontSize: 17,
+      fontWeight: '900',
+    },
+    infoText: {
+      flex: 1,
+    },
+    infoTitle: {
+      color: TEXT,
+      fontSize: 11,
+      fontWeight: '900',
+    },
+    infoBody: {
+      color: MUTED,
+      fontSize: 9,
+      lineHeight: 14,
+      marginTop: 3,
+    },
+    switchRow: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      backgroundColor: '#F7FAF5',
+      borderRadius: 16,
+      padding: 12,
+      borderWidth: 1,
+      borderColor: BORDER,
+      marginBottom: 12,
+    },
+    switchText: {
+      flex: 1,
+      paddingRight: 10,
+    },
+    switchTitle: {
+      color: TEXT,
+      fontSize: 11,
+      fontWeight: '900',
+    },
+    switchHint: {
+      color: MUTED,
+      fontSize: 9,
+      lineHeight: 14,
+      marginTop: 3,
+    },
+    switch: {
+      width: 52,
+      height: 31,
+      borderRadius: 999,
+      backgroundColor: '#D9E2D6',
+      padding: 3,
+      justifyContent: 'center',
+    },
+    switchOn: {
+      backgroundColor:
+        'rgba(99, 201, 52, 0.40)',
+    },
+    switchDot: {
+      width: 25,
+      height: 25,
+      borderRadius: 13,
+      backgroundColor: CARD,
+      shadowColor: '#69736B',
+      shadowOpacity: 0.16,
+      shadowRadius: 3,
+      shadowOffset: {
+        width: 0,
+        height: 2,
+      },
+      elevation: 2,
+      transform: [
+        {
+          translateX: 0,
+        },
+      ],
+    },
+    switchDotOn: {
+      backgroundColor: GREEN,
+      transform: [
+        {
+          translateX: 21,
+        },
+      ],
+    },
+    goalGrid: {
+      flexDirection: 'row',
+      flexWrap: 'wrap',
+      marginHorizontal: -4,
+    },
+    goalCard: {
+      width: '47.8%',
+      minHeight: 105,
+      borderRadius: 17,
+      borderWidth: 1,
+      borderColor: BORDER,
+      backgroundColor: '#F7FAF5',
+      padding: 11,
+      marginHorizontal: 4,
+      marginBottom: 8,
+    },
+    goalCardActive: {
+      backgroundColor:
+        'rgba(99, 201, 52, 0.11)',
+      borderColor:
+        'rgba(99, 201, 52, 0.42)',
+    },
+    goalIcon: {
+      width: 37,
+      height: 37,
+      borderRadius: 13,
+      alignItems: 'center',
+      justifyContent: 'center',
+      backgroundColor: CARD,
+      borderWidth: 1,
+      borderColor: BORDER,
+    },
+    goalIconActive: {
+      backgroundColor: GREEN,
+      borderColor: GREEN,
+    },
+    goalIconText: {
+      fontSize: 17,
+      fontWeight: '900',
+    },
+    goalText: {
+      color: TEXT,
+      fontSize: 11,
+      lineHeight: 15,
+      fontWeight: '900',
+      marginTop: 9,
+      paddingRight: 18,
+    },
+    goalTextActive: {
+      color: '#2E6E17',
+    },
+    goalCheck: {
+      position: 'absolute',
+      top: 10,
+      right: 10,
+      width: 20,
+      height: 20,
+      borderRadius: 10,
+      alignItems: 'center',
+      justifyContent: 'center',
+      borderWidth: 1,
+      borderColor: '#CDD8CA',
+      backgroundColor: CARD,
+    },
+    goalCheckActive: {
+      borderColor: GREEN,
+      backgroundColor: GREEN,
+    },
+    goalCheckText: {
+      color: '#10230F',
+      fontSize: 11,
+      fontWeight: '900',
+    },
+    tipCard: {
+      flexDirection: 'row',
+      marginTop: 7,
+      backgroundColor: '#FFF9E8',
+      borderRadius: 17,
+      borderWidth: 1,
+      borderColor: '#F0DBA2',
+      padding: 12,
+    },
+    tipIcon: {
+      width: 38,
+      height: 38,
+      borderRadius: 19,
+      alignItems: 'center',
+      justifyContent: 'center',
+      backgroundColor: '#FFF0B8',
+      marginRight: 9,
+    },
+    tipIconText: {
+      color: WARNING,
+      fontSize: 17,
+      fontWeight: '900',
+    },
+    tipText: {
+      flex: 1,
+    },
+    tipTitle: {
+      color: '#8B6500',
+      fontSize: 11,
+      fontWeight: '900',
+    },
+    tipBody: {
+      color: '#5C594E',
+      fontSize: 9,
+      lineHeight: 15,
+      marginTop: 4,
+    },
+    footer: {
+      flexDirection: 'row',
+      paddingHorizontal: 13,
+      paddingTop: 10,
+      paddingBottom: 11,
+      backgroundColor:
+        'rgba(255, 255, 255, 0.97)',
+      borderTopWidth: 1,
+      borderTopColor: BORDER,
+    },
+    footerButton: {
+      flex: 1,
+      minHeight: 50,
+      borderRadius: 15,
+      alignItems: 'center',
+      justifyContent: 'center',
+      borderWidth: 1,
+    },
+    footerPlaceholder: {
+      flex: 1,
+    },
+    backButton: {
+      backgroundColor: CARD,
+      borderColor: BORDER,
+      marginRight: 5,
+    },
+    backButtonText: {
+      color: TEAL,
+      fontSize: 13,
+      fontWeight: '900',
+    },
+    nextButton: {
+      backgroundColor: GREEN,
+      borderColor: GREEN,
+      marginLeft: 5,
+      shadowColor: GREEN,
+      shadowOpacity: 0.16,
+      shadowRadius: 7,
+      shadowOffset: {
+        width: 0,
+        height: 3,
+      },
+      elevation: 3,
+    },
+    nextButtonText: {
+      color: '#10230F',
+      fontSize: 13,
+      fontWeight: '900',
+    },
+    disabledButton: {
+      backgroundColor: '#E7ECE4',
+      borderColor: '#DCE4D9',
+      marginLeft: 5,
+    },
+    disabledText: {
+      color: '#929C94',
+    },
+    languageModalWrap: {
+      flex: 1,
+      justifyContent: 'flex-end',
+    },
+    languageBackdrop: {
+      ...StyleSheet.absoluteFillObject,
+      backgroundColor:
+        'rgba(27, 37, 29, 0.36)',
+    },
+    languageModalCard: {
+      maxHeight: '78%',
+      backgroundColor: CARD,
+      borderTopLeftRadius: 28,
+      borderTopRightRadius: 28,
+      borderWidth: 1,
+      borderColor: BORDER,
+      paddingTop: 17,
+      paddingHorizontal: 14,
+      paddingBottom:
+        Platform.OS === 'ios'
+          ? 27
+          : 17,
+      shadowColor: '#536056',
+      shadowOpacity: 0.20,
+      shadowRadius: 24,
+      shadowOffset: {
+        width: 0,
+        height: -8,
+      },
+      elevation: 14,
+    },
+    languageModalHeader: {
+      flexDirection: 'row',
+      alignItems: 'flex-start',
+      marginBottom: 12,
+    },
+    languageModalTitleWrap: {
+      flex: 1,
+      paddingRight: 12,
+    },
+    languageModalTitle: {
+      color: TEXT,
+      fontSize: 21,
+      lineHeight: 27,
+      fontWeight: '900',
+    },
+    languageModalSubtitle: {
+      color: MUTED,
+      fontSize: 10,
+      lineHeight: 16,
+      marginTop: 4,
+    },
+    languageCloseButton: {
+      width: 37,
+      height: 37,
+      borderRadius: 19,
+      alignItems: 'center',
+      justifyContent: 'center',
+      backgroundColor: SOFT,
+      borderWidth: 1,
+      borderColor: BORDER,
+    },
+    languageCloseText: {
+      color: TEXT,
+      fontSize: 23,
+      lineHeight: 25,
+      fontWeight: '600',
+      marginTop: -2,
+    },
+    languageList: {
+      flexGrow: 0,
+    },
+    languageListContent: {
+      paddingBottom: 3,
+    },
+    languageItem: {
+      minHeight: 58,
+      flexDirection: 'row',
+      alignItems: 'center',
+      backgroundColor: '#F7FAF5',
+      borderRadius: 16,
+      borderWidth: 1,
+      borderColor: BORDER,
+      paddingHorizontal: 12,
+      marginBottom: 8,
+    },
+    languageItemActive: {
+      backgroundColor:
+        'rgba(99, 201, 52, 0.11)',
+      borderColor:
+        'rgba(99, 201, 52, 0.45)',
+    },
+    languageItemFlag: {
+      width: 32,
+      fontSize: 22,
+    },
+    languageItemBody: {
+      flex: 1,
+      paddingHorizontal: 8,
+    },
+    languageItemLabel: {
+      color: TEXT,
+      fontSize: 13,
+      fontWeight: '800',
+    },
+    languageItemLabelActive: {
+      color: '#2E6E17',
+      fontWeight: '900',
+    },
+    languageItemCode: {
+      color: MUTED,
+      fontSize: 8,
+      fontWeight: '900',
+      letterSpacing: 0.8,
+      marginTop: 2,
+    },
+    languageCheck: {
+      width: 24,
+      height: 24,
+      borderRadius: 12,
+      alignItems: 'center',
+      justifyContent: 'center',
+      borderWidth: 1,
+      borderColor: '#CDD8CA',
+      backgroundColor: CARD,
+    },
+    languageCheckActive: {
+      borderColor: GREEN,
+      backgroundColor: GREEN,
+    },
+    languageCheckText: {
+      color: '#10230F',
+      fontSize: 12,
+      fontWeight: '900',
+    },
+    modalWrap: {
+      flex: 1,
+      alignItems: 'center',
+      justifyContent: 'center',
+      paddingHorizontal: 18,
+    },
+    backdrop: {
+      ...StyleSheet.absoluteFillObject,
+      backgroundColor:
+        'rgba(27, 37, 29, 0.34)',
+    },
+    resultCard: {
+      width: '100%',
+      maxWidth: 430,
+      backgroundColor: CARD,
+      borderRadius: 25,
+      padding: 18,
+      borderWidth: 1,
+      borderColor:
+        'rgba(99, 201, 52, 0.32)',
+      shadowColor: '#536056',
+      shadowOpacity: 0.18,
+      shadowRadius: 24,
+      shadowOffset: {
+        width: 0,
+        height: 10,
+      },
+      elevation: 10,
+    },
+    resultIcon: {
+      width: 56,
+      height: 56,
+      borderRadius: 28,
+      alignItems: 'center',
+      justifyContent: 'center',
+      backgroundColor: GREEN,
+      marginBottom: 12,
+    },
+    resultIconText: {
+      color: '#10230F',
+      fontSize: 27,
+      fontWeight: '900',
+    },
+    resultKicker: {
+      color: TEAL,
+      fontSize: 9,
+      fontWeight: '900',
+      letterSpacing: 1,
+    },
+    resultTitle: {
+      color: TEXT,
+      fontSize: 23,
+      lineHeight: 28,
+      fontWeight: '900',
+      marginTop: 4,
+    },
+    resultSubtitle: {
+      color: MUTED,
+      fontSize: 10,
+      lineHeight: 16,
+      marginTop: 6,
+    },
+    bmiCard: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      justifyContent: 'space-between',
+      backgroundColor: SOFT,
+      borderRadius: 17,
+      borderWidth: 1,
+      borderColor: BORDER,
+      padding: 12,
+      marginTop: 13,
+    },
+    bmiCaption: {
+      color: MUTED,
+      fontSize: 9,
+      fontWeight: '900',
+      letterSpacing: 0.8,
+    },
+    bmiNumber: {
+      color: GREEN,
+      fontSize: 28,
+      fontWeight: '900',
+      marginTop: 2,
+    },
+    bmiPill: {
+      maxWidth: '58%',
+      borderRadius: 999,
+      paddingHorizontal: 11,
+      paddingVertical: 7,
+      backgroundColor:
+        'rgba(24, 163, 155, 0.09)',
+      borderWidth: 1,
+      borderColor:
+        'rgba(24, 163, 155, 0.24)',
+    },
+    bmiPillText: {
+      color: TEAL,
+      fontSize: 9,
+      fontWeight: '900',
+      textAlign: 'center',
+    },
+    adviceCard: {
+      marginTop: 11,
+      backgroundColor: '#F7FAF5',
+      borderRadius: 16,
+      padding: 12,
+      borderWidth: 1,
+      borderColor: BORDER,
+    },
+    adviceTitle: {
+      color: TEXT,
+      fontSize: 11,
+      fontWeight: '900',
+      marginBottom: 6,
+    },
+    adviceScroll: {
+      maxHeight: 170,
+    },
+    adviceText: {
+      color: '#455047',
+      fontSize: 10,
+      lineHeight: 16,
+    },
+    disclaimer: {
+      color: MUTED,
+      fontSize: 8,
+      lineHeight: 13,
+      marginTop: 9,
+    },
+    startButton: {
+      minHeight: 51,
+      alignItems: 'center',
+      justifyContent: 'center',
+      backgroundColor: GREEN,
+      borderRadius: 999,
+      marginTop: 13,
+    },
+    startButtonText: {
+      color: '#10230F',
+      fontSize: 14,
+      fontWeight: '900',
+    },
+  });

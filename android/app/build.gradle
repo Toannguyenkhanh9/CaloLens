@@ -79,7 +79,7 @@ android {
 
     namespace "com.workout"
     defaultConfig {
-        applicationId "com.nexus.calolens"
+        applicationId "com.nexus.calolens1"
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
         versionCode 1
