@@ -340,6 +340,68 @@ React.FC = () => {
           />
         ) : null}
 
+        <View style={styles.topSummarySection}>
+        <View style={styles.totalCard}>
+          <Text style={styles.totalTitle}>
+            {t(
+              'mealScan.mealTotal',
+              'Meal total',
+            )}
+          </Text>
+
+          <Text style={styles.totalCalories}>
+            {Math.round(
+              totals.calories,
+            )}{' '}
+            kcal
+          </Text>
+
+          <Text style={styles.totalMacros}>
+            {Math.round(
+              totals.proteinG,
+            )}g P •{' '}
+            {Math.round(
+              totals.carbsG,
+            )}g C •{' '}
+            {Math.round(
+              totals.fatsG,
+            )}g F
+          </Text>
+        </View>
+
+        <TouchableOpacity
+          activeOpacity={0.86}
+          style={[
+            styles.saveButton,
+            saving &&
+              styles.disabled,
+          ]}
+          onPress={save}
+          disabled={saving}
+        >
+          <Text style={styles.saveText}>
+            {saving
+              ? t(
+                  'mealScan.saving',
+                  'Saving…',
+                )
+              : t(
+                  'mealScan.saveMeal',
+                  'Add to today',
+                )}
+          </Text>
+        </TouchableOpacity>
+
+        <View style={styles.notice}>
+          <Text style={styles.noticeText}>
+            {t(
+              'mealScan.estimateDisclaimer',
+              'Calories and nutrients are estimates. Results vary by ingredients, cooking method and actual portion size.',
+            )}
+          </Text>
+        </View>
+        </View>
+
         <Text style={styles.sectionLabel}>
           {t(
             'mealScan.mealType',
@@ -651,65 +713,7 @@ React.FC = () => {
           </Text>
         </TouchableOpacity>
 
-        <View style={styles.totalCard}>
-          <Text style={styles.totalTitle}>
-            {t(
-              'mealScan.mealTotal',
-              'Meal total',
-            )}
-          </Text>
 
-          <Text style={styles.totalCalories}>
-            {Math.round(
-              totals.calories,
-            )}{' '}
-            kcal
-          </Text>
-
-          <Text style={styles.totalMacros}>
-            {Math.round(
-              totals.proteinG,
-            )}g P •{' '}
-            {Math.round(
-              totals.carbsG,
-            )}g C •{' '}
-            {Math.round(
-              totals.fatsG,
-            )}g F
-          </Text>
-        </View>
-
-        <View style={styles.notice}>
-          <Text style={styles.noticeText}>
-            {t(
-              'mealScan.estimateDisclaimer',
-              'Calories and nutrients are estimates. Results vary by ingredients, cooking method and actual portion size.',
-            )}
-          </Text>
-        </View>
-
-        <TouchableOpacity
-          activeOpacity={0.86}
-          style={[
-            styles.saveButton,
-            saving &&
-              styles.disabled,
-          ]}
-          onPress={save}
-          disabled={saving}
-        >
-          <Text style={styles.saveText}>
-            {saving
-              ? t(
-                  'mealScan.saving',
-                  'Saving…',
-                )
-              : t(
-                  'mealScan.saveMeal',
-                  'Add to today',
-                )}
-          </Text>
-        </TouchableOpacity>
       </ScrollView>
     </View>
   );
@@ -742,7 +746,10 @@ const styles =
       height: 230,
       borderRadius: 22,
       backgroundColor: CARD,
-      marginBottom: 16,
+      marginBottom: 12,
+    },
+    topSummarySection: {
+      marginBottom: 18,
     },
     sectionLabel: {
       color: TEXT,
@@ -887,7 +894,7 @@ const styles =
         'rgba(124, 255, 58, 0.3)',
       borderRadius: 19,
       padding: 14,
-      marginTop: 14,
+      marginTop: 0,
     },
     totalTitle: {
       color: TEXT,
@@ -914,7 +921,7 @@ const styles =
         'rgba(250, 204, 21, 0.2)',
       borderRadius: 14,
       padding: 11,
-      marginTop: 13,
+      marginTop: 10,
     },
     noticeText: {
       color: '#8B6500',
@@ -926,7 +933,7 @@ const styles =
       backgroundColor: NEON,
       paddingVertical: 14,
       alignItems: 'center',
-      marginTop: 15,
+      marginTop: 12,
     },
     saveText: {
       color: '#10230F',

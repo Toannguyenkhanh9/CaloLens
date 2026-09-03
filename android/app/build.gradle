@@ -79,10 +79,10 @@ android {
 
     namespace "com.workout"
     defaultConfig {
-        applicationId "com.nexus.calolens1"
+        applicationId "com.nexus.calolens"
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
-        versionCode 1
+        versionCode 3
         versionName "1.0"
         missingDimensionStrategy 'store', 'play'
     }

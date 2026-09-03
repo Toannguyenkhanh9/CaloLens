@@ -11,6 +11,7 @@ import {
   PermissionsAndroid,
   Platform,
   ScrollView,
+  StatusBar,
   StyleSheet,
   Text,
   TouchableOpacity,
@@ -34,6 +35,7 @@ import {
 import i18n from '../i18n';
 import '../i18n/mealScanAccessTranslations';
 import '../i18n/caloLensFoodToolsTranslations';
+import '../i18n/mealScanAiErrorTranslations';
 
 import {
   analyzeMealPhoto,
@@ -56,8 +58,228 @@ const BG = '#F5F8F2';
 const CARD = '#FFFFFF';
 const TEXT = '#17211A';
 const MUTED = '#6D786F';
-const NEON = '#63C934';
+const GREEN = '#63C934';
+const NEON = GREEN;
 const CYAN = '#18A39B';
+
+
+type ParsedMealAiError = {
+  code: string;
+  message: string;
+  retryable: boolean;
+};
+
+const getRawErrorMessage = (
+  error: unknown,
+) => {
+  if (
+    error instanceof Error
+  ) {
+    return error.message;
+  }
+
+  if (
+    error &&
+    typeof error === 'object' &&
+    'message' in error
+  ) {
+    return String(
+      (
+        error as {
+          message?: unknown;
+        }
+      ).message ||
+        '',
+    );
+  }
+
+  return String(
+    error ||
+      '',
+  );
+};
+
+const parseJsonErrorBody = (
+  rawMessage: string,
+): Record<string, unknown> | null => {
+  const trimmed =
+    rawMessage.trim();
+
+  if (!trimmed) {
+    return null;
+  }
+
+  const candidates = [
+    trimmed,
+  ];
+
+  const firstBrace =
+    trimmed.indexOf('{');
+
+  const lastBrace =
+    trimmed.lastIndexOf('}');
+
+  if (
+    firstBrace >= 0 &&
+    lastBrace >
+      firstBrace
+  ) {
+    candidates.push(
+      trimmed.slice(
+        firstBrace,
+        lastBrace + 1,
+      ),
+    );
+  }
+
+  for (
+    const candidate of candidates
+  ) {
+    try {
+      const parsed =
+        JSON.parse(
+          candidate,
+        );
+
+      if (
+        parsed &&
+        typeof parsed ===
+          'object' &&
+        !Array.isArray(
+          parsed,
+        )
+      ) {
+        return parsed as
+          Record<
+            string,
+            unknown
+          >;
+      }
+    } catch {
+      // Continue.
+    }
+  }
+
+  return null;
+};
+
+const parseMealAiError = (
+  error: unknown,
+): ParsedMealAiError => {
+  const rawMessage =
+    getRawErrorMessage(
+      error,
+    );
+
+  const responseData =
+    (
+      error &&
+      typeof error ===
+        'object' &&
+      'response' in error
+    )
+      ? (
+          error as {
+            response?: {
+              data?: unknown;
+            };
+          }
+        ).response?.data
+      : undefined;
+
+  const body =
+    (
+      responseData &&
+      typeof responseData ===
+        'object' &&
+      !Array.isArray(
+        responseData,
+      )
+    )
+      ? responseData as
+          Record<
+            string,
+            unknown
+          >
+      : parseJsonErrorBody(
+          rawMessage,
+        );
+
+  const code =
+    String(
+      body?.error ||
+      '',
+    ).trim();
+
+  const bodyMessage =
+    String(
+      body?.message ||
+      body?.details ||
+      '',
+    ).trim();
+
+  const message =
+    bodyMessage ||
+    rawMessage;
+
+  const normalized =
+    `${code} ${message}`
+      .toLowerCase();
+
+  const retryable =
+    body?.retryable ===
+      true ||
+    code ===
+      'AI_SERVICE_BUSY' ||
+    normalized.includes(
+      'high demand',
+    ) ||
+    normalized.includes(
+      'temporarily busy',
+    ) ||
+    normalized.includes(
+      'temporarily unavailable',
+    ) ||
+    normalized.includes(
+      'resource_exhausted',
+    ) ||
+    normalized.includes(
+      'too many requests',
+    ) ||
+    normalized.includes(
+      'overloaded',
+    ) ||
+    normalized.includes(
+      '429',
+    ) ||
+    normalized.includes(
+      '503',
+    );
+
+  return {
+    code,
+    message,
+    retryable,
+  };
+};
+
+const isSafeDisplayMessage = (
+  message: string,
+) => {
+  const trimmed =
+    message.trim();
+
+  return (
+    Boolean(trimmed) &&
+    !trimmed.startsWith('{') &&
+    !trimmed.startsWith('[') &&
+    !trimmed.includes(
+      '"error"',
+    ) &&
+    trimmed.length <=
+      240
+  );
+};
 
 export const MealScannerScreen:
 React.FC = () => {
@@ -460,10 +682,19 @@ React.FC = () => {
         }
 
         /**
-         * Cả Free và Premium đều trừ lượt.
-         * Free: giới hạn 3.
-         * Premium: giới hạn 15.
+         * Chỉ trừ lượt sau khi AI phân tích thành công.
+         * Nếu backend quá tải hoặc mất mạng, lượt quét
+         * vẫn được giữ nguyên.
          */
+        const foods =
+          await analyzeMealPhoto({
+            uri: imageUri,
+            locale:
+              i18n.resolvedLanguage ||
+              i18n.language ||
+              'en',
+          });
+
         const consumed =
           await consumeTodayMealScan(
             isPremium,
@@ -482,15 +713,6 @@ React.FC = () => {
 
           return;
         }
-
-        const foods =
-          await analyzeMealPhoto({
-            uri: imageUri,
-            locale:
-              i18n.resolvedLanguage ||
-              i18n.language ||
-              'en',
-          });
 
         navigation.navigate(
           'MealReview',
@@ -518,16 +740,53 @@ React.FC = () => {
           return;
         }
 
+        const parsedError =
+          parseMealAiError(
+            error,
+          );
+
+        console.log(
+          '[meal scan] analysis failed',
+          {
+            code:
+              parsedError.code,
+            retryable:
+              parsedError.retryable,
+            message:
+              parsedError.message,
+          },
+        );
+
+        if (
+          parsedError.retryable
+        ) {
+          Alert.alert(
+            t(
+              'mealScan.analysisFailedTitle',
+              'Unable to analyze meal',
+            ),
+            t(
+              'mealScan.aiBusyBody',
+              'The AI service is temporarily busy. Please wait a moment and try again. Your scan has not been used.',
+            ),
+          );
+
+          return;
+        }
+
         Alert.alert(
           t(
             'mealScan.analysisFailedTitle',
             'Unable to analyze meal',
           ),
-          error?.message ||
-          t(
-            'mealScan.analysisFailedBody',
-            'Check your connection and try again.',
-          ),
+          isSafeDisplayMessage(
+            parsedError.message,
+          )
+            ? parsedError.message
+            : t(
+                'mealScan.analysisFailedBody',
+                'Unable to analyze this meal. Please check your connection and try again. Your scan has not been used.',
+              ),
         );
       } finally {
         setAnalyzing(false);
@@ -536,6 +795,11 @@ React.FC = () => {
 
   return (
     <View style={styles.container}>
+      <StatusBar
+        barStyle="dark-content"
+        backgroundColor={BG}
+      />
+
       <ScrollView
         showsVerticalScrollIndicator={false}
         contentContainerStyle={
@@ -905,7 +1169,7 @@ const styles =
       backgroundColor: BG,
     },
     content: {
-      paddingHorizontal: 8,
+      paddingHorizontal: 16,
       paddingTop: 18,
       paddingBottom: 135,
     },
@@ -997,7 +1261,7 @@ const styles =
       marginHorizontal: 3,
     },
     quotaDotAvailable: {
-      backgroundColor: NEON,
+      backgroundColor: GREEN,
     },
     previewCard: {
       height: 360,
@@ -1005,7 +1269,7 @@ const styles =
       backgroundColor: CARD,
       borderWidth: 1,
       borderColor:
-        'rgba(99, 201, 52, 0.26)',
+        '#DCE6D8',
       overflow: 'hidden',
       marginTop: 18,
     },
@@ -1019,6 +1283,7 @@ const styles =
       alignItems: 'center',
       justifyContent: 'center',
       padding: 24,
+      backgroundColor: '#EEF4EA',
     },
     cameraIcon: {
       fontSize: 52,
@@ -1078,7 +1343,7 @@ const styles =
     analyzeButton: {
       minHeight: 50,
       borderRadius: 999,
-      backgroundColor: NEON,
+      backgroundColor: GREEN,
       flexDirection: 'row',
       alignItems: 'center',
       justifyContent: 'center',

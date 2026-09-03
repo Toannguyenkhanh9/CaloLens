@@ -412,7 +412,7 @@ export const PremiumScreen: React.FC = () => {
         </View>
       </View>
 
-      <View style={[styles.planCard, styles.plusCard]}>
+      {/* <View style={[styles.planCard, styles.plusCard]}>
         <View style={styles.planHeader}>
           <View style={{ flex: 1 }}>
             <Text style={styles.plusName}>
@@ -503,7 +503,7 @@ export const PremiumScreen: React.FC = () => {
             </Text>
           </TouchableOpacity>
         </View>
-      </View>
+      </View> */}
 
       <TouchableOpacity
         style={[

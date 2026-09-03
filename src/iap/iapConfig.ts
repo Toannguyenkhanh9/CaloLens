@@ -2,10 +2,10 @@
 
 // Premium thường
 export const PREMIUM_LIFETIME_PRODUCT_ID =
-  'pulsefit_premium_lifetime';
+  'calolens_premium_lifetime';
 
 export const PREMIUM_MONTHLY_SUB_ID =
-  'pulsefit_premium_monthly';
+  'calolens_premium_monthy';
 
 // Premium Plus
 export const PREMIUM_PLUS_MONTHLY_SUB_ID =
