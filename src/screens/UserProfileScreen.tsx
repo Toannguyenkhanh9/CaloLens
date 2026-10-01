@@ -1,4 +1,6 @@
 // FILE: src/screens/UserProfileScreen.tsx
+import FoodAccentCard from '../components/FoodAccentCard';
+import HeroFoodCornerAccent from '../components/HeroFoodCornerAccent';
 import React, { useEffect, useMemo, useState } from 'react';
 import {
   View,
@@ -35,13 +37,13 @@ const STORAGE_KEY = 'user:profile';
 const RECO_KEY = 'user:recommendation';
 const BMI_KEY = 'user:bmi';
 
-const BG = '#F5F8F2';
+const BG = '#FFF8F2';
 const CARD = '#FFFFFF';
-const CARD_2 = '#F0F5ED';
-const TEXT = '#17211A';
-const MUTED = '#6D786F';
-const NEON = '#63C934';
-const CYAN = '#18A39B';
+const CARD_2 = '#FFF2E8';
+const TEXT = '#21170F';
+const MUTED = '#78695F';
+const NEON = '#FF6A21';
+const CYAN = '#F29132';
 
 const enUserProfile = {
   UserProfile: {
@@ -219,6 +221,8 @@ export const UserProfileScreen: React.FC<any> = ({ navigation }) => {
     return (
       <SafeAreaView style={[styles.safe, styles.loadingWrap]}>
         <StatusBar barStyle="dark-content" backgroundColor={BG} />
+
+      <HeroFoodCornerAccent />
         <Text style={styles.loadingText}>{t('UserProfile.loading')}</Text>
       </SafeAreaView>
     );
@@ -366,10 +370,10 @@ export const UserProfileScreen: React.FC<any> = ({ navigation }) => {
                 value={!!profile.injured}
                 onValueChange={(v) => setField('injured', v)}
                 trackColor={{
-                  false: 'rgba(109, 120, 111, 0.30)',
-                  true: 'rgba(99, 201, 52, 0.36)',
+                  false: 'rgba(120, 105, 95, 0.30)',
+                  true: 'rgba(255, 106, 33, 0.36)',
                 }}
-                thumbColor={profile.injured ? NEON : '#526057'}
+                thumbColor={profile.injured ? NEON : '#6E5F55'}
                 style={{ marginLeft: 8 }}
               />
             </View>
@@ -421,6 +425,8 @@ export const UserProfileScreen: React.FC<any> = ({ navigation }) => {
               </Text>
             </TouchableOpacity>
           </View>
+
+          <FoodAccentCard variant="guidance" height={150} />
         </ScrollView>
       </KeyboardAvoidingView>
     </SafeAreaView>
@@ -434,7 +440,7 @@ const Label: React.FC<{ children: React.ReactNode }> = ({ children }) => (
 const Input: React.FC<React.ComponentProps<typeof TextInput>> = (props) => (
   <TextInput
     {...props}
-    placeholderTextColor="rgba(109, 120, 111, 0.68)"
+    placeholderTextColor="rgba(120, 105, 95, 0.68)"
     style={[styles.input, props.style]}
   />
 );
@@ -512,7 +518,7 @@ const styles = StyleSheet.create({
     width: 260,
     height: 260,
     borderRadius: 130,
-    backgroundColor: 'rgba(24, 163, 155, 0.10)',
+    backgroundColor: 'rgba(242, 145, 50, 0.10)',
   },
   glowBottom: {
     position: 'absolute',
@@ -521,7 +527,7 @@ const styles = StyleSheet.create({
     width: 250,
     height: 250,
     borderRadius: 125,
-    backgroundColor: 'rgba(99, 201, 52, 0.10)',
+    backgroundColor: 'rgba(255, 106, 33, 0.10)',
   },
   container: {
     paddingHorizontal: 8,
@@ -537,8 +543,8 @@ const styles = StyleSheet.create({
     paddingVertical: 6,
     borderRadius: 999,
     borderWidth: 1,
-    borderColor: 'rgba(24, 163, 155, 0.45)',
-    backgroundColor: 'rgba(24, 163, 155, 0.10)',
+    borderColor: 'rgba(242, 145, 50, 0.45)',
+    backgroundColor: 'rgba(242, 145, 50, 0.10)',
     marginBottom: 14,
   },
   kickerText: {
@@ -554,7 +560,7 @@ const styles = StyleSheet.create({
     fontWeight: '900',
   },
   caption: {
-    color: '#455047',
+    color: '#5F544D',
     fontSize: 15,
     lineHeight: 22,
     marginTop: 8,
@@ -566,7 +572,7 @@ const styles = StyleSheet.create({
     padding: 16,
     marginBottom: 14,
     borderWidth: 1,
-    borderColor: 'rgba(99, 201, 52, 0.24)',
+    borderColor: 'rgba(255, 106, 33, 0.24)',
   },
   sectionTitle: {
     color: TEXT,
@@ -575,7 +581,7 @@ const styles = StyleSheet.create({
     marginBottom: 14,
   },
   label: {
-    color: '#526057',
+    color: '#6E5F55',
     fontWeight: '900',
     marginBottom: 7,
     fontSize: 13,
@@ -590,7 +596,7 @@ const styles = StyleSheet.create({
     backgroundColor: CARD_2,
     borderRadius: 15,
     borderWidth: 1,
-    borderColor: 'rgba(109, 120, 111, 0.20)',
+    borderColor: 'rgba(120, 105, 95, 0.20)',
     paddingHorizontal: 13,
     paddingVertical: 11,
     color: TEXT,
@@ -610,7 +616,7 @@ const styles = StyleSheet.create({
     borderRadius: 15,
     padding: 3,
     borderWidth: 1,
-    borderColor: 'rgba(109, 120, 111, 0.20)',
+    borderColor: 'rgba(120, 105, 95, 0.20)',
     marginBottom: 12,
   },
   segmentItem: {
@@ -628,7 +634,7 @@ const styles = StyleSheet.create({
     fontSize: 12,
   },
   segmentTextActive: {
-    color: '#10230F',
+    color: '#FFFFFF',
     fontWeight: '900',
   },
   switchRow: {
@@ -638,7 +644,7 @@ const styles = StyleSheet.create({
     borderRadius: 16,
     padding: 13,
     borderWidth: 1,
-    borderColor: 'rgba(109, 120, 111, 0.18)',
+    borderColor: 'rgba(120, 105, 95, 0.18)',
     marginBottom: 12,
   },
 
@@ -647,7 +653,7 @@ const styles = StyleSheet.create({
     backgroundColor: CARD,
     borderRadius: 22,
     borderWidth: 1,
-    borderColor: 'rgba(24, 163, 155, 0.22)',
+    borderColor: 'rgba(242, 145, 50, 0.22)',
     padding: 14,
     marginBottom: 14,
   },
@@ -655,9 +661,9 @@ const styles = StyleSheet.create({
     width: 42,
     height: 42,
     borderRadius: 21,
-    backgroundColor: 'rgba(24, 163, 155, 0.10)',
+    backgroundColor: 'rgba(242, 145, 50, 0.10)',
     borderWidth: 1,
-    borderColor: 'rgba(24, 163, 155, 0.30)',
+    borderColor: 'rgba(242, 145, 50, 0.30)',
     alignItems: 'center',
     justifyContent: 'center',
     marginRight: 11,
@@ -674,7 +680,7 @@ const styles = StyleSheet.create({
     textTransform: 'uppercase',
   },
   infoText: {
-    color: '#455047',
+    color: '#5F544D',
     lineHeight: 21,
     fontWeight: '600',
   },
@@ -697,11 +703,11 @@ const styles = StyleSheet.create({
   },
   btnDisabled: {
     backgroundColor: CARD_2,
-    borderColor: 'rgba(109, 120, 111, 0.18)',
+    borderColor: 'rgba(120, 105, 95, 0.18)',
   },
   btnGhost: {
     backgroundColor: CARD_2,
-    borderColor: 'rgba(24, 163, 155, 0.30)',
+    borderColor: 'rgba(242, 145, 50, 0.30)',
   },
   btnText: {
     fontWeight: '900',

@@ -1,4 +1,6 @@
 // FILE: src/screens/PremiumScreen.tsx
+import FoodAccentCard from '../components/FoodAccentCard';
+import HeroFoodCornerAccent from '../components/HeroFoodCornerAccent';
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import {
   View,
@@ -23,8 +25,6 @@ import {
 
 import {
   loadPremiumPlan,
-  markPremiumActive,
-  markPremiumPlusActive,
   type PremiumPlan,
 } from '../services/premiumAccess';
 
@@ -33,10 +33,13 @@ export const PremiumScreen: React.FC = () => {
 
   const {
     isPremium,
+    connected,
     loading,
     purchasing,
+    iapError,
     products,
     subscriptions,
+    reloadProducts,
     buyLifetime,
     buyMonthlySubscription,
     restorePurchases,
@@ -50,27 +53,50 @@ export const PremiumScreen: React.FC = () => {
   }, []);
 
   useEffect(() => {
-    reloadPlan();
+    void reloadPlan();
   }, [reloadPlan]);
 
+  // SubscriptionProvider is the source of truth for purchase entitlement.
+  // Reload local UI state after the provider changes/finishes validation,
+  // but never write Premium access from this screen.
   useEffect(() => {
-    if (isPremium) {
-      markPremiumActive().then(reloadPlan).catch(() => {});
+    if (!loading) {
+      void reloadPlan();
     }
-  }, [isPremium, reloadPlan]);
+  }, [isPremium, loading, reloadPlan]);
+
+  const getItemId = useCallback((item: any) => {
+    return (
+      item?.productId ||
+      item?.id ||
+      item?.sku ||
+      item?.productIdentifier ||
+      item?.productIds?.[0] ||
+      ''
+    );
+  }, []);
 
   const findProduct = useCallback(
     (productId: string) => {
-      return products.find((p: any) => p.productId === productId) || null;
+      return (
+        products.find(
+          (product: any) => getItemId(product) === productId,
+        ) || null
+      );
     },
-    [products],
+    [getItemId, products],
   );
 
   const findSubscription = useCallback(
     (productId: string) => {
-      return subscriptions.find((s: any) => s.productId === productId) || null;
+      return (
+        subscriptions.find(
+          (subscription: any) =>
+            getItemId(subscription) === productId,
+        ) || null
+      );
     },
-    [subscriptions],
+    [getItemId, subscriptions],
   );
 
   const premiumLifetimeProduct = useMemo(() => {
@@ -89,34 +115,145 @@ export const PremiumScreen: React.FC = () => {
     return findSubscription(PREMIUM_PLUS_MONTHLY_SUB_ID);
   }, [findSubscription]);
 
-  const getSubPrice = useCallback((sub: any) => {
-    if (!sub) return '$--';
+  const findFormattedPrice = useCallback(
+    (value: any, depth = 0): string => {
+      if (!value || depth > 6) return '';
 
-    if (sub.localizedPrice) return sub.localizedPrice;
-    if (sub.price) return sub.price;
+      if (Array.isArray(value)) {
+        for (const item of value) {
+          const found = findFormattedPrice(item, depth + 1);
+          if (found) return found;
+        }
+        return '';
+      }
 
-    const androidPhase =
-      sub.subscriptionOfferDetails?.[0]?.pricingPhases
-        ?.pricingPhaseList?.[0]?.formattedPrice;
+      if (typeof value !== 'object') return '';
 
-    return androidPhase || '$--';
-  }, []);
+      const preferredKeys = [
+        'displayPrice',
+        'localizedPrice',
+        'formattedPrice',
+        'formattedPriceAmount',
+      ];
 
-  const getProductPrice = useCallback((product: any) => {
-    if (!product) return '$--';
+      for (const key of preferredKeys) {
+        const candidate = value?.[key];
+        if (
+          typeof candidate === 'string' &&
+          candidate.trim().length > 0
+        ) {
+          return candidate.trim();
+        }
+      }
 
-    return product.localizedPrice || product.price || '$--';
-  }, []);
+      const nestedKeys = [
+        'oneTimePurchaseOfferDetailsAndroid',
+        'oneTimePurchaseOfferDetails',
+        'purchaseOptions',
+        'purchaseOption',
+        'offers',
+        'offerDetails',
+        'pricingPhases',
+        'pricingPhaseList',
+      ];
 
-  const getAndroidOfferToken = useCallback((sub: any) => {
-    if (Platform.OS !== 'android') return undefined;
+      for (const key of nestedKeys) {
+        const found = findFormattedPrice(
+          value?.[key],
+          depth + 1,
+        );
+        if (found) return found;
+      }
 
-    return sub?.subscriptionOfferDetails?.[0]?.offerToken;
-  }, []);
+      return '';
+    },
+    [],
+  );
+
+  const getAndroidSubscriptionOffer = useCallback(
+    (subscription: any) => {
+      return (
+        subscription?.subscriptionOfferDetailsAndroid?.[0] ||
+        subscription?.subscriptionOfferDetails?.[0] ||
+        null
+      );
+    },
+    [],
+  );
+
+  const getSubPrice = useCallback(
+    (sub: any) => {
+      if (!sub) return '$--';
+
+      const recursivePrice = findFormattedPrice(sub);
+      if (recursivePrice) return recursivePrice;
+
+      if (typeof sub.price === 'string' && sub.price.trim()) {
+        return sub.price;
+      }
+
+      return '$--';
+    },
+    [findFormattedPrice],
+  );
+
+  const getProductPrice = useCallback(
+    (product: any) => {
+      if (!product) return '$--';
+
+      const recursivePrice = findFormattedPrice(product);
+      if (recursivePrice) return recursivePrice;
+
+      if (typeof product.price === 'string' && product.price.trim()) {
+        return product.price;
+      }
+
+      if (typeof product.price === 'number') {
+        return String(product.price);
+      }
+
+      return '$--';
+    },
+    [findFormattedPrice],
+  );
+
+  const getAndroidOfferToken = useCallback(
+    (sub: any) => {
+      if (Platform.OS !== 'android') return undefined;
+
+      return getAndroidSubscriptionOffer(sub)?.offerToken;
+    },
+    [getAndroidSubscriptionOffer],
+  );
+
+  useEffect(() => {
+    if (
+      connected &&
+      !loading &&
+      !premiumLifetimeProduct
+    ) {
+      console.log('[premium] lifetime product missing', {
+        expected: PREMIUM_LIFETIME_PRODUCT_ID,
+        products: products.map(getItemId),
+        subscriptions: subscriptions.map(getItemId),
+        iapError,
+      });
+    }
+  }, [
+    connected,
+    getItemId,
+    iapError,
+    loading,
+    premiumLifetimeProduct,
+    products,
+    subscriptions,
+  ]);
 
   const onBuyPremiumMonthly = async () => {
     try {
-      if (!premiumMonthlySub?.productId) {
+      const productId = getItemId(premiumMonthlySub);
+
+      if (!productId) {
         Alert.alert(
           t('premium.errorTitle', 'Purchase failed'),
           t(
@@ -127,17 +264,12 @@ export const PremiumScreen: React.FC = () => {
         return;
       }
 
+      // Do not activate Premium here. A cancelled billing sheet can return
+      // control to JS without a successful purchase. SubscriptionProvider's
+      // onPurchaseSuccess callback is the only place that grants access.
       await buyMonthlySubscription(
-        premiumMonthlySub.productId,
+        productId,
         getAndroidOfferToken(premiumMonthlySub),
-      );
-
-      await markPremiumActive();
-      await reloadPlan();
-
-      Alert.alert(
-        t('premium.restoreTitle', 'Premium'),
-        t('premium.restoreSuccess', 'Premium restored successfully.'),
       );
     } catch (e: any) {
       Alert.alert(
@@ -149,7 +281,9 @@ export const PremiumScreen: React.FC = () => {
 
   const onBuyPremiumLifetime = async () => {
     try {
-      if (!premiumLifetimeProduct?.productId) {
+      const productId = getItemId(premiumLifetimeProduct);
+
+      if (!productId) {
         Alert.alert(
           t('premium.errorTitle', 'Purchase failed'),
           t(
@@ -160,15 +294,9 @@ export const PremiumScreen: React.FC = () => {
         return;
       }
 
-      await buyLifetime(premiumLifetimeProduct.productId);
-
-      await markPremiumActive();
-      await reloadPlan();
-
-      Alert.alert(
-        t('premium.restoreTitle', 'Premium'),
-        t('premium.restoreSuccess', 'Premium restored successfully.'),
-      );
+      // Lifetime access is granted only by SubscriptionProvider after
+      // Google Play / App Store reports a successful purchase.
+      await buyLifetime(productId);
     } catch (e: any) {
       Alert.alert(
         t('premium.errorTitle', 'Purchase failed'),
@@ -179,7 +307,9 @@ export const PremiumScreen: React.FC = () => {
 
   const onBuyPlusMonthly = async () => {
     try {
-      if (!plusMonthlySub?.productId) {
+      const productId = getItemId(plusMonthlySub);
+
+      if (!productId) {
         Alert.alert(
           t('premium.errorTitle', 'Purchase failed'),
           t(
@@ -191,19 +321,8 @@ export const PremiumScreen: React.FC = () => {
       }
 
       await buyMonthlySubscription(
-        plusMonthlySub.productId,
+        productId,
         getAndroidOfferToken(plusMonthlySub),
-      );
-
-      await markPremiumPlusActive();
-      await reloadPlan();
-
-      Alert.alert(
-        t('premium.restoreTitle', 'Premium Plus'),
-        t(
-          'premium.plusSuccess',
-          'Premium Plus is active. Offline video download unlocked.',
-        ),
       );
     } catch (e: any) {
       Alert.alert(
@@ -215,7 +334,9 @@ export const PremiumScreen: React.FC = () => {
 
   const onBuyPlusLifetime = async () => {
     try {
-      if (!plusLifetimeProduct?.productId) {
+      const productId = getItemId(plusLifetimeProduct);
+
+      if (!productId) {
         Alert.alert(
           t('premium.errorTitle', 'Purchase failed'),
           t(
@@ -226,18 +347,7 @@ export const PremiumScreen: React.FC = () => {
         return;
       }
 
-      await buyLifetime(plusLifetimeProduct.productId);
-
-      await markPremiumPlusActive();
-      await reloadPlan();
-
-      Alert.alert(
-        t('premium.restoreTitle', 'Premium Plus'),
-        t(
-          'premium.plusSuccess',
-          'Premium Plus is active. Offline video download unlocked.',
-        ),
-      );
+      await buyLifetime(productId);
     } catch (e: any) {
       Alert.alert(
         t('premium.errorTitle', 'Purchase failed'),
@@ -250,14 +360,7 @@ export const PremiumScreen: React.FC = () => {
     try {
       const ok = await restorePurchases();
 
-      if (ok) {
-        /**
-         * Lưu ý:
-         * Phần restore chính xác Premium hay Premium Plus nên xử lý trong SubscriptionProvider.
-         * Ở đây chỉ reload lại key đã được Provider lưu.
-         */
-        await reloadPlan();
-      }
+      await reloadPlan();
 
       Alert.alert(
         t('premium.restoreTitle', 'Restore purchases'),
@@ -284,8 +387,10 @@ export const PremiumScreen: React.FC = () => {
     >
       <StatusBar
         barStyle="dark-content"
-        backgroundColor="#F5F8F2"
+        backgroundColor="#FFF8F2"
       />
+
+      <HeroFoodCornerAccent />
 
       <View style={styles.hero}>
         <View style={styles.heroIcon}>
@@ -301,7 +406,7 @@ export const PremiumScreen: React.FC = () => {
           </Text>
 
           <Text style={styles.heroSubtitle}>
-            More AI scans, no ads and advanced nutrition tools.
+            No rewarded ads and advanced nutrition tools.
           </Text>
         </View>
       </View>
@@ -377,7 +482,7 @@ export const PremiumScreen: React.FC = () => {
             activeOpacity={0.85}
           >
             {purchasing ? (
-              <ActivityIndicator color="#10230F" />
+              <ActivityIndicator color="#FFFFFF" />
             ) : (
               <Text style={styles.buttonText}>
                 {t('premium.subscribeMonthly', 'Subscribe monthly')}
@@ -392,6 +497,18 @@ export const PremiumScreen: React.FC = () => {
               ? t('premium.loading', 'Loading...')
               : getProductPrice(premiumLifetimeProduct)}
           </Text>
+
+          {!loading && !premiumLifetimeProduct ? (
+            <TouchableOpacity
+              activeOpacity={0.82}
+              onPress={() => void reloadProducts()}
+              style={styles.retryPriceButton}
+            >
+              <Text style={styles.retryPriceText}>
+                {t('premium.retryPrices', 'Reload store price')}
+              </Text>
+            </TouchableOpacity>
+          ) : null}
 
           <TouchableOpacity
             style={[
@@ -473,7 +590,7 @@ export const PremiumScreen: React.FC = () => {
             activeOpacity={0.85}
           >
             {purchasing ? (
-              <ActivityIndicator color="#10230F" />
+              <ActivityIndicator color="#FFFFFF" />
             ) : (
               <Text style={styles.plusButtonText}>
                 {t('premium.subscribePlusMonthly', 'Subscribe Plus')}
@@ -518,6 +635,8 @@ export const PremiumScreen: React.FC = () => {
           {t('premium.restore', 'Restore purchases')}
         </Text>
       </TouchableOpacity>
+
+      <FoodAccentCard variant="hero" height={170} />
     </ScrollView>
   );
 };
@@ -525,7 +644,7 @@ export const PremiumScreen: React.FC = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#F5F8F2',
+    backgroundColor: '#FFF8F2',
   },
   content: {
     paddingHorizontal: 8,
@@ -538,10 +657,10 @@ const styles = StyleSheet.create({
     backgroundColor: '#FFFFFF',
     borderRadius: 22,
     borderWidth: 1,
-    borderColor: 'rgba(99, 201, 52, 0.26)',
+    borderColor: 'rgba(255, 106, 33, 0.26)',
     padding: 15,
     marginBottom: 14,
-    shadowColor: '#879487',
+    shadowColor: '#C28A66',
     shadowOpacity: 0.09,
     shadowRadius: 12,
     shadowOffset: {
@@ -556,50 +675,50 @@ const styles = StyleSheet.create({
     borderRadius: 18,
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: 'rgba(99, 201, 52, 0.12)',
+    backgroundColor: 'rgba(255, 106, 33, 0.12)',
     borderWidth: 1,
-    borderColor: 'rgba(99, 201, 52, 0.30)',
+    borderColor: 'rgba(255, 106, 33, 0.30)',
     marginRight: 12,
   },
   heroIconText: {
-    color: '#63C934',
+    color: '#FF6A21',
     fontSize: 23,
     fontWeight: '900',
   },
   heroKicker: {
-    color: '#18A39B',
+    color: '#F29132',
     fontSize: 9,
     fontWeight: '900',
     letterSpacing: 0.9,
   },
   title: {
-    color: '#17211A',
+    color: '#21170F',
     fontSize: 24,
     fontWeight: '900',
     marginTop: 3,
   },
   heroSubtitle: {
-    color: '#6D786F',
+    color: '#78695F',
     fontSize: 11,
     lineHeight: 16,
     marginTop: 4,
   },
   text: {
-    color: '#455047',
+    color: '#5F544D',
     fontSize: 13,
     lineHeight: 20,
     marginBottom: 6,
   },
   activeBox: {
-    backgroundColor: 'rgba(99, 201, 52, 0.10)',
-    borderColor: 'rgba(99, 201, 52, 0.30)',
+    backgroundColor: 'rgba(255, 106, 33, 0.10)',
+    borderColor: 'rgba(255, 106, 33, 0.30)',
     borderWidth: 1,
     borderRadius: 16,
     padding: 12,
     marginBottom: 12,
   },
   activeText: {
-    color: '#4F9E2A',
+    color: '#E85A18',
     fontWeight: '900',
     textAlign: 'center',
   },
@@ -607,10 +726,10 @@ const styles = StyleSheet.create({
     backgroundColor: '#FFFFFF',
     borderRadius: 22,
     borderWidth: 1,
-    borderColor: '#DDE8D9',
+    borderColor: '#F1D9C8',
     padding: 15,
     marginTop: 10,
-    shadowColor: '#879487',
+    shadowColor: '#C28A66',
     shadowOpacity: 0.07,
     shadowRadius: 10,
     shadowOffset: {
@@ -620,8 +739,8 @@ const styles = StyleSheet.create({
     elevation: 2,
   },
   plusCard: {
-    backgroundColor: '#F7FBEF',
-    borderColor: 'rgba(99, 201, 52, 0.30)',
+    backgroundColor: '#FFF6EC',
+    borderColor: 'rgba(255, 106, 33, 0.30)',
   },
   planHeader: {
     flexDirection: 'row',
@@ -629,51 +748,51 @@ const styles = StyleSheet.create({
     marginBottom: 12,
   },
   planName: {
-    color: '#17211A',
+    color: '#21170F',
     fontSize: 21,
     fontWeight: '900',
   },
   plusName: {
-    color: '#4F9E2A',
+    color: '#E85A18',
     fontSize: 22,
     fontWeight: '900',
   },
   planDesc: {
-    color: '#6D786F',
+    color: '#78695F',
     fontSize: 12,
     lineHeight: 18,
     marginTop: 5,
   },
   benefitList: {
-    backgroundColor: '#F7FAF5',
+    backgroundColor: '#FFFBF7',
     borderRadius: 15,
     padding: 12,
     marginTop: 3,
     marginBottom: 9,
   },
   currentPill: {
-    backgroundColor: 'rgba(43, 130, 217, 0.10)',
+    backgroundColor: 'rgba(255, 147, 80, 0.10)',
     borderWidth: 1,
-    borderColor: 'rgba(43, 130, 217, 0.28)',
+    borderColor: 'rgba(255, 147, 80, 0.28)',
     borderRadius: 999,
     paddingHorizontal: 10,
     paddingVertical: 5,
   },
   currentPillText: {
-    color: '#2B82D9',
+    color: '#FF9350',
     fontSize: 11,
     fontWeight: '900',
   },
   plusPill: {
-    backgroundColor: 'rgba(99, 201, 52, 0.11)',
+    backgroundColor: 'rgba(255, 106, 33, 0.11)',
     borderWidth: 1,
-    borderColor: 'rgba(99, 201, 52, 0.34)',
+    borderColor: 'rgba(255, 106, 33, 0.34)',
     borderRadius: 999,
     paddingHorizontal: 10,
     paddingVertical: 5,
   },
   plusPillText: {
-    color: '#4F9E2A',
+    color: '#E85A18',
     fontSize: 11,
     fontWeight: '900',
   },
@@ -681,25 +800,35 @@ const styles = StyleSheet.create({
     marginTop: 12,
   },
   priceValue: {
-    color: '#17211A',
+    color: '#21170F',
     fontSize: 27,
     fontWeight: '900',
     marginBottom: 9,
   },
+  retryPriceButton: {
+    alignSelf: 'flex-start',
+    marginBottom: 9,
+    paddingVertical: 2,
+  },
+  retryPriceText: {
+    color: '#F29132',
+    fontSize: 11,
+    fontWeight: '900',
+  },
   button: {
-    backgroundColor: '#63C934',
+    backgroundColor: '#FF6A21',
     paddingVertical: 13,
     borderRadius: 999,
   },
   buttonSecondary: {
-    backgroundColor: '#F0F5ED',
+    backgroundColor: '#FFF2E8',
     borderWidth: 1,
-    borderColor: '#DDE8D9',
+    borderColor: '#F1D9C8',
     paddingVertical: 13,
     borderRadius: 999,
   },
   plusButton: {
-    backgroundColor: '#63C934',
+    backgroundColor: '#FF6A21',
     paddingVertical: 13,
     borderRadius: 999,
   },
@@ -714,19 +843,19 @@ const styles = StyleSheet.create({
     opacity: 0.55,
   },
   buttonText: {
-    color: '#10230F',
+    color: '#FFFFFF',
     textAlign: 'center',
     fontWeight: '900',
     fontSize: 15,
   },
   buttonSecondaryText: {
-    color: '#17211A',
+    color: '#21170F',
     textAlign: 'center',
     fontWeight: '900',
     fontSize: 15,
   },
   plusButtonText: {
-    color: '#10230F',
+    color: '#FFFFFF',
     textAlign: 'center',
     fontWeight: '900',
     fontSize: 15,
@@ -742,11 +871,11 @@ const styles = StyleSheet.create({
     paddingVertical: 13,
     borderRadius: 999,
     borderWidth: 1,
-    borderColor: '#C9D6C6',
+    borderColor: '#E8CFBC',
     backgroundColor: '#FFFFFF',
   },
   restoreText: {
-    color: '#455047',
+    color: '#5F544D',
     textAlign: 'center',
     fontWeight: '900',
     fontSize: 14,

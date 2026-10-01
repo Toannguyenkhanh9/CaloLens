@@ -1,4 +1,6 @@
 // FILE: src/screens/FavoriteMealsScreen.tsx
+import FoodAccentCard from '../components/FoodAccentCard';
+import HeroFoodCornerAccent from '../components/HeroFoodCornerAccent';
 import React, {
   useCallback,
   useState,
@@ -27,12 +29,12 @@ import {
   type FavoriteMeal,
 } from '../nutrition/mealFavorites';
 
-const BG = '#F5F8F2';
+const BG = '#FFF8F2';
 const CARD = '#FFFFFF';
-const TEXT = '#17211A';
-const MUTED = '#6D786F';
-const NEON = '#63C934';
-const CYAN = '#18A39B';
+const TEXT = '#21170F';
+const MUTED = '#78695F';
+const NEON = '#FF6A21';
+const CYAN = '#F29132';
 
 export const FavoriteMealsScreen:
 React.FC = () => {
@@ -115,6 +117,8 @@ React.FC = () => {
         barStyle="dark-content"
         backgroundColor={BG}
       />
+
+      <HeroFoodCornerAccent />
 
       <ScrollView
         showsVerticalScrollIndicator={false}
@@ -238,6 +242,8 @@ React.FC = () => {
             );
           })
         )}
+
+        <FoodAccentCard variant="guidance" height={160} />
       </ScrollView>
     </View>
   );
@@ -264,10 +270,10 @@ const styles =
       paddingVertical: 6,
       borderRadius: 999,
       backgroundColor:
-        'rgba(24, 163, 155, 0.08)',
+        'rgba(242, 145, 50, 0.08)',
       borderWidth: 1,
       borderColor:
-        'rgba(24, 163, 155, 0.28)',
+        'rgba(242, 145, 50, 0.28)',
       marginBottom: 13,
     },
     kickerText: {
@@ -295,7 +301,7 @@ const styles =
       borderRadius: 20,
       borderWidth: 1,
       borderColor:
-        'rgba(109, 120, 111, 0.17)',
+        'rgba(120, 105, 95, 0.17)',
       padding: 13,
       marginBottom: 10,
     },
@@ -306,7 +312,7 @@ const styles =
       alignItems: 'center',
       justifyContent: 'center',
       backgroundColor:
-        'rgba(99, 201, 52, 0.10)',
+        'rgba(255, 106, 33, 0.10)',
       marginRight: 11,
     },
     cardIconText: {
@@ -339,7 +345,7 @@ const styles =
       marginRight: 5,
     },
     addText: {
-      color: '#10230F',
+      color: '#FFFFFF',
       fontSize: 11,
       fontWeight: '900',
     },
@@ -366,7 +372,7 @@ const styles =
       borderRadius: 21,
       borderWidth: 1,
       borderColor:
-        'rgba(99, 201, 52, 0.22)',
+        'rgba(255, 106, 33, 0.22)',
       padding: 22,
       alignItems: 'center',
     },

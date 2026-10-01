@@ -35,6 +35,22 @@ export const openNotificationTarget = (
     return;
   }
 
+  const discoverRoute =
+    normalized.tastepilotRoute;
+
+  if (discoverRoute) {
+    navigationRef.navigate(
+      'Today',
+      {
+        screen: 'TastePilotFeature',
+        params: {
+          screen: discoverRoute,
+        },
+      },
+    );
+    return;
+  }
+
   const target =
     normalized.target;
 

@@ -39,7 +39,7 @@ export const PdfViewerScreen: React.FC<Props> = ({ route }) => {
 };
 
 const s = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#F5F8F2' },
+  container: { flex: 1, backgroundColor: '#FFF8F2' },
   pdf: { flex: 1, width: '100%' },
 });
 

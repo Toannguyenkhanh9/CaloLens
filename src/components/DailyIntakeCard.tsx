@@ -428,7 +428,7 @@ const styles =
       borderRadius: 20,
       borderWidth: 1,
       borderColor:
-        'rgba(124, 255, 58, 0.26)',
+        'rgba(255, 90, 31, 0.26)',
       padding: 15,
       marginBottom: 12,
     },
@@ -480,10 +480,10 @@ const styles =
     },
     remainingPill: {
       backgroundColor:
-        'rgba(124, 255, 58, 0.12)',
+        'rgba(255, 90, 31, 0.12)',
       borderWidth: 1,
       borderColor:
-        'rgba(124, 255, 58, 0.32)',
+        'rgba(255, 90, 31, 0.32)',
       borderRadius: 999,
       paddingHorizontal: 10,
       paddingVertical: 7,

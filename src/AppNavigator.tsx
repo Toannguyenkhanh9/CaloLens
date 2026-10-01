@@ -28,6 +28,8 @@ import './i18n/mealScannerTranslations';
 import './i18n/mealScanAccessTranslations';
 import './i18n/caloLensInsightsTranslations';
 import './i18n/caloLensFoodToolsTranslations';
+import './i18n/caloLensDiscoverTranslations';
+import './tastepilot/i18n';
 
 import CaloLensHomeScreen
   from './screens/CaloLensHomeScreen';
@@ -77,6 +79,7 @@ import {
 import {
   PremiumScreen,
 } from './screens/PremiumScreen';
+import TastePilotFeatureNavigator from './tastepilot/navigation/FeatureNavigator';
 
 import {
   AdBanner,
@@ -94,12 +97,12 @@ const Tab =
 const Stack =
   createNativeStackNavigator();
 
-const BG = '#F5F8F2';
+const BG = '#FFF8F2';
 const CARD = '#FFFFFF';
-const TEXT = '#17211A';
-const MUTED = '#788279';
-const NEON = '#63C934';
-const CYAN = '#18A39B';
+const TEXT = '#21170F';
+const MUTED = '#7B6E65';
+const NEON = '#FF5A1F';
+const CYAN = '#F47B35';
 
 const screenHeaderOptions = {
   headerStyle: {
@@ -353,6 +356,14 @@ React.FC = () => {
         component={
           CaloLensHomeScreen
         }
+        options={{
+          headerShown: false,
+        }}
+      />
+
+      <Stack.Screen
+        name="TastePilotFeature"
+        component={TastePilotFeatureNavigator}
         options={{
           headerShown: false,
         }}
@@ -880,7 +891,7 @@ React.FC = () => {
             backgroundColor:
               CARD,
             borderTopColor:
-              'rgba(99, 201, 52, 0.20)',
+              'rgba(255, 90, 31, 0.20)',
             borderTopWidth: 1,
             height:
               totalBottomHeight,
@@ -889,7 +900,7 @@ React.FC = () => {
             paddingBottom:
               extraBottom,
             shadowColor:
-              '#7A897D',
+              '#B9896E',
             shadowOpacity:
               0.12,
             shadowRadius: 12,
@@ -1064,10 +1075,10 @@ const styles =
     },
     tabIconWrapActive: {
       backgroundColor:
-        'rgba(99, 201, 52, 0.13)',
+        'rgba(255, 90, 31, 0.13)',
       borderWidth: 1,
       borderColor:
-        'rgba(99, 201, 52, 0.30)',
+        'rgba(255, 90, 31, 0.30)',
     },
     tabIcon: {
       fontSize: 19,
@@ -1098,7 +1109,7 @@ const styles =
       elevation: 8,
     },
     scanIconWrapActive: {
-      backgroundColor: CYAN,
+      backgroundColor: '#FF5A1F',
       transform: [
         {
           translateY: -11,
@@ -1124,7 +1135,7 @@ const styles =
       borderBottomWidth:
         StyleSheet.hairlineWidth,
       borderTopColor:
-        'rgba(99, 201, 52, 0.20)',
+        'rgba(255, 90, 31, 0.20)',
       borderBottomColor:
         'rgba(109, 120, 111, 0.14)',
       paddingTop: 4,

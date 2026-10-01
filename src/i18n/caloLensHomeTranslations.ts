@@ -12,9 +12,9 @@ const en = {
     },
     brandTag: 'AI MEAL & CALORIE TRACKER',
     homeKicker: 'YOUR DAILY NUTRITION',
-    homeTitle: 'Eat with a clear target',
+    homeTitle: 'Eat smarter,\nlive healthier',
     homeSubtitle:
-      'Scan meals, track calories and adjust portions around your personal goal.',
+      'Scan your meals, track calories and stay on your goals.',
     completeProfile: 'Set up your calorie target',
     completeProfileBody:
       'Enter age, height, weight, activity level and body goal to calculate your daily calories and macros.',
@@ -58,9 +58,9 @@ const vi = {
     },
     brandTag: 'AI QUÉT BỮA ĂN & THEO DÕI CALO',
     homeKicker: 'DINH DƯỠNG HÔM NAY',
-    homeTitle: 'Ăn uống theo mục tiêu rõ ràng',
+    homeTitle: 'Ăn thông minh,\nsống khỏe hơn',
     homeSubtitle:
-      'Quét bữa ăn, theo dõi calo và điều chỉnh khẩu phần theo mục tiêu cá nhân.',
+      'Quét bữa ăn, theo dõi calo và bám sát mục tiêu của bạn.',
     completeProfile: 'Thiết lập mục tiêu calo',
     completeProfileBody:
       'Nhập tuổi, chiều cao, cân nặng, mức vận động và mục tiêu cơ thể để tính calo và macro hằng ngày.',

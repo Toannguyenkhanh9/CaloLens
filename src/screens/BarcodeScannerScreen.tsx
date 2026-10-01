@@ -17,12 +17,12 @@ import {Camera} from 'react-native-camera-kit';
 
 import {findFoodByBarcode} from '../nutrition/foodLibrary';
 
-const BG = '#F5F8F2';
+const BG = '#FFF8F2';
 const CARD = '#FFFFFF';
-const TEXT = '#17211A';
-const MUTED = '#6D786F';
-const NEON = '#63C934';
-const BORDER = '#DDE8D9';
+const TEXT = '#21170F';
+const MUTED = '#78695F';
+const NEON = '#FF6A21';
+const BORDER = '#F1D9C8';
 
 export const BarcodeScannerScreen: React.FC = () => {
   const {t} = useTranslation();
@@ -93,7 +93,7 @@ export const BarcodeScannerScreen: React.FC = () => {
 
   return (
     <View style={styles.screen}>
-      <StatusBar barStyle="light-content" backgroundColor="#17211A" />
+      <StatusBar barStyle="light-content" backgroundColor="#21170F" />
       <View style={styles.cameraWrap}>
         {permissionGranted ? (
           <Camera
@@ -148,7 +148,7 @@ export const BarcodeScannerScreen: React.FC = () => {
 
 const styles = StyleSheet.create({
   screen: {flex: 1, backgroundColor: BG},
-  cameraWrap: {flex: 1, minHeight: 390, backgroundColor: '#17211A', overflow: 'hidden'},
+  cameraWrap: {flex: 1, minHeight: 390, backgroundColor: '#21170F', overflow: 'hidden'},
   camera: {flex: 1},
   cameraHeader: {position: 'absolute', top: 22, left: 18, right: 18},
   cameraKicker: {color: NEON, fontSize: 10, fontWeight: '900', letterSpacing: 1},
@@ -156,13 +156,13 @@ const styles = StyleSheet.create({
   permissionBox: {flex: 1, alignItems: 'center', justifyContent: 'center', paddingHorizontal: 30},
   permissionIcon: {color: NEON, fontSize: 54},
   permissionTitle: {color: '#FFFFFF', fontSize: 20, fontWeight: '900', textAlign: 'center', marginTop: 12},
-  permissionText: {color: '#CBD5CE', fontSize: 12, lineHeight: 18, textAlign: 'center', marginTop: 7},
+  permissionText: {color: '#E9D8CC', fontSize: 12, lineHeight: 18, textAlign: 'center', marginTop: 7},
   permissionButton: {minWidth: 160, minHeight: 46, alignItems: 'center', justifyContent: 'center', backgroundColor: NEON, borderRadius: 999, marginTop: 15},
   permissionButtonText: {color: '#10230F', fontSize: 12, fontWeight: '900'},
   manualCard: {backgroundColor: CARD, borderTopLeftRadius: 24, borderTopRightRadius: 24, borderWidth: 1, borderColor: BORDER, paddingHorizontal: 13, paddingTop: 15, paddingBottom: 22, marginTop: -18},
   manualTitle: {color: TEXT, fontSize: 15, fontWeight: '900', marginBottom: 9},
   manualRow: {flexDirection: 'row'},
-  manualInput: {flex: 1, minHeight: 48, backgroundColor: '#F5F8F2', borderRadius: 14, borderWidth: 1, borderColor: BORDER, color: TEXT, fontSize: 14, fontWeight: '800', paddingHorizontal: 12, marginRight: 7},
+  manualInput: {flex: 1, minHeight: 48, backgroundColor: '#FFF8F2', borderRadius: 14, borderWidth: 1, borderColor: BORDER, color: TEXT, fontSize: 14, fontWeight: '800', paddingHorizontal: 12, marginRight: 7},
   lookupButton: {minWidth: 90, minHeight: 48, alignItems: 'center', justifyContent: 'center', backgroundColor: NEON, borderRadius: 14},
   lookupText: {color: '#10230F', fontSize: 11, fontWeight: '900'},
   manualHint: {color: MUTED, fontSize: 9, lineHeight: 14, marginTop: 8},

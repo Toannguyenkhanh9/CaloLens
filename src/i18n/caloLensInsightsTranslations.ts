@@ -6,6 +6,7 @@ const resources = {
     caloLensInsights: {
       nextMealKicker: 'NEXT MEAL',
       nextMealTitle: 'What should you eat next?',
+      findNearby: 'Find nearby',
       scoreKicker: 'NUTRITION SCORE',
       scoreExcellent: 'Excellent balance',
       scoreGood: 'Good progress',
@@ -55,6 +56,7 @@ const resources = {
     caloLensInsights: {
       nextMealKicker: 'BỮA TIẾP THEO',
       nextMealTitle: 'Bạn nên ăn gì tiếp theo?',
+      findNearby: 'Tìm quán gần đây',
       scoreKicker: 'ĐIỂM DINH DƯỠNG',
       scoreExcellent: 'Cân bằng rất tốt',
       scoreGood: 'Tiến độ tốt',
@@ -104,6 +106,7 @@ const resources = {
     caloLensInsights: {
       nextMealKicker: 'PRÓXIMA COMIDA',
       nextMealTitle: '¿Qué deberías comer después?',
+      findNearby: 'Buscar cerca',
       scoreKicker: 'PUNTUACIÓN NUTRICIONAL',
       scoreExcellent: 'Equilibrio excelente',
       scoreGood: 'Buen progreso',
@@ -133,6 +136,7 @@ const resources = {
     caloLensInsights: {
       nextMealKicker: 'PROCHAIN REPAS',
       nextMealTitle: 'Que manger ensuite ?',
+      findNearby: 'Trouver à proximité',
       scoreKicker: 'SCORE NUTRITION',
       scoreExcellent: 'Excellent équilibre',
       scoreGood: 'Bonne progression',
@@ -162,6 +166,7 @@ const resources = {
     caloLensInsights: {
       nextMealKicker: 'NÄCHSTE MAHLZEIT',
       nextMealTitle: 'Was solltest du als Nächstes essen?',
+      findNearby: 'In der Nähe finden',
       scoreKicker: 'ERNÄHRUNGSSCORE',
       scoreExcellent: 'Ausgezeichnete Balance',
       scoreGood: 'Guter Fortschritt',
@@ -191,6 +196,7 @@ const resources = {
     caloLensInsights: {
       nextMealKicker: '下一餐',
       nextMealTitle: '接下来吃什么？',
+      findNearby: '查找附近餐厅',
       scoreKicker: '营养评分',
       scoreExcellent: '营养平衡优秀',
       scoreGood: '进度良好',
@@ -220,6 +226,7 @@ const resources = {
     caloLensInsights: {
       nextMealKicker: '次の食事',
       nextMealTitle: '次に何を食べますか？',
+      findNearby: '近くのお店を探す',
       scoreKicker: '栄養スコア',
       scoreExcellent: 'とても良いバランス',
       scoreGood: '順調です',
@@ -249,6 +256,7 @@ const resources = {
     caloLensInsights: {
       nextMealKicker: '다음 식사',
       nextMealTitle: '다음에는 무엇을 먹을까요?',
+      findNearby: '근처 식당 찾기',
       scoreKicker: '영양 점수',
       scoreExcellent: '훌륭한 균형',
       scoreGood: '좋은 진행',
@@ -278,6 +286,7 @@ const resources = {
     caloLensInsights: {
       nextMealKicker: 'СЛЕДУЮЩИЙ ПРИЁМ',
       nextMealTitle: 'Что съесть дальше?',
+      findNearby: 'Найти рядом',
       scoreKicker: 'ОЦЕНКА ПИТАНИЯ',
       scoreExcellent: 'Отличный баланс',
       scoreGood: 'Хороший прогресс',
@@ -307,6 +316,7 @@ const resources = {
     caloLensInsights: {
       nextMealKicker: 'الوجبة التالية',
       nextMealTitle: 'ماذا تأكل بعد ذلك؟',
+      findNearby: 'ابحث بالقرب منك',
       scoreKicker: 'درجة التغذية',
       scoreExcellent: 'توازن ممتاز',
       scoreGood: 'تقدم جيد',
@@ -336,6 +346,7 @@ const resources = {
     caloLensInsights: {
       nextMealKicker: 'अगला भोजन',
       nextMealTitle: 'अगला क्या खाएँ?',
+      findNearby: 'आस-पास खोजें',
       scoreKicker: 'पोषण स्कोर',
       scoreExcellent: 'बेहतरीन संतुलन',
       scoreGood: 'अच्छी प्रगति',
@@ -365,6 +376,7 @@ const resources = {
     caloLensInsights: {
       nextMealKicker: 'มื้อต่อไป',
       nextMealTitle: 'มื้อต่อไปควรกินอะไร?',
+      findNearby: 'ค้นหาร้านใกล้ฉัน',
       scoreKicker: 'คะแนนโภชนาการ',
       scoreExcellent: 'สมดุลดีเยี่ยม',
       scoreGood: 'ความคืบหน้าดี',
@@ -394,6 +406,7 @@ const resources = {
     caloLensInsights: {
       nextMealKicker: 'MAKANAN BERIKUTNYA',
       nextMealTitle: 'Apa yang sebaiknya dimakan berikutnya?',
+      findNearby: 'Cari di sekitar',
       scoreKicker: 'SKOR NUTRISI',
       scoreExcellent: 'Keseimbangan sangat baik',
       scoreGood: 'Progres bagus',
@@ -423,6 +436,7 @@ const resources = {
     caloLensInsights: {
       nextMealKicker: 'HIDANGAN SETERUSNYA',
       nextMealTitle: 'Apa yang patut dimakan seterusnya?',
+      findNearby: 'Cari berdekatan',
       scoreKicker: 'SKOR PEMAKANAN',
       scoreExcellent: 'Keseimbangan cemerlang',
       scoreGood: 'Kemajuan baik',
@@ -481,6 +495,7 @@ const resources = {
     caloLensInsights: {
       nextMealKicker: 'PRÓXIMA REFEIÇÃO',
       nextMealTitle: 'O que comer a seguir?',
+      findNearby: 'Encontrar perto',
       scoreKicker: 'PONTUAÇÃO NUTRICIONAL',
       scoreExcellent: 'Excelente equilíbrio',
       scoreGood: 'Bom progresso',

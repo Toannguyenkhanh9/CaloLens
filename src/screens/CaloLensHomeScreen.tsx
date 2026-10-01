@@ -5,7 +5,7 @@ import React, {
   useState,
 } from 'react';
 import {
-  ImageBackground,
+  Image,
   KeyboardAvoidingView,
   Modal,
   Platform,
@@ -29,6 +29,7 @@ import {
 } from 'react-i18next';
 import AsyncStorage
   from '@react-native-async-storage/async-storage';
+import Svg, {Circle} from 'react-native-svg';
 
 import {
   buildNutritionPlan,
@@ -52,23 +53,24 @@ import FrequentMealsCard
 const PROFILE_KEY =
   'user:profile';
 
-const HERO_IMAGE =
-  require(
-    '../../assets/images/nutrition_hero.png',
-  );
+const HERO_FOOD_IMAGE =
+  require('../assets/calo_home_hero_food.jpg');
 
-const BG = '#F5F8F2';
+const GUIDANCE_FOOD_IMAGE =
+  require('../assets/calo_guidance_food.jpg');
+
+const BG = '#FFF8F2';
 const CARD = '#FFFFFF';
-const CARD_2 = '#F0F5ED';
-const TEXT = '#17211A';
-const MUTED = '#6D786F';
-const NEON = '#63C934';
-const CYAN = '#18A39B';
-const YELLOW = '#D99A00';
-const BLUE = '#2B82D9';
-const PINK = '#D85E78';
-const BORDER = '#DDE8D9';
-const TRACK = '#E8EEE5';
+const CARD_2 = '#FFF0E4';
+const TEXT = '#21170F';
+const MUTED = '#78695F';
+const NEON = '#FF5A1F';
+const CYAN = '#F47B35';
+const YELLOW = '#F4A51C';
+const BLUE = '#FF8A3D';
+const PINK = '#FF6B6B';
+const BORDER = '#F0DDD0';
+const TRACK = '#F3E8E0';
 
 type QuickActionProps = {
   icon: string;
@@ -470,23 +472,110 @@ React.FC<{
   </View>
 );
 
+const CalorieRing:
+React.FC<{
+  progress: number;
+}> = ({progress}) => {
+  const size = 86;
+  const strokeWidth = 9;
+  const radius =
+    (size - strokeWidth) / 2;
+  const circumference =
+    2 * Math.PI * radius;
+  const safeProgress =
+    clampPercent(progress);
+  const dashOffset =
+    circumference *
+    (1 - safeProgress / 100);
+
+  return (
+    <View
+      style={[
+        styles.calorieRingWrap,
+        {
+          width: size,
+          height: size,
+        },
+      ]}
+    >
+      <Svg
+        width={size}
+        height={size}
+        viewBox={`0 0 ${size} ${size}`}
+      >
+        <Circle
+          cx={size / 2}
+          cy={size / 2}
+          r={radius}
+          fill="none"
+          stroke="#F1E4D9"
+          strokeWidth={strokeWidth}
+        />
+
+        <Circle
+          cx={size / 2}
+          cy={size / 2}
+          r={radius}
+          fill="none"
+          stroke={NEON}
+          strokeWidth={strokeWidth}
+          strokeLinecap="round"
+          strokeDasharray={`${circumference} ${circumference}`}
+          strokeDashoffset={dashOffset}
+          rotation="-90"
+          origin={`${size / 2}, ${size / 2}`}
+        />
+      </Svg>
+
+      <View style={styles.calorieRingCenter}>
+        <Text style={styles.calorieRingPercent}>
+          {Math.round(safeProgress)}%
+        </Text>
+      </View>
+    </View>
+  );
+};
+
 const MacroProgressRow:
 React.FC<{
   label: string;
+  short: string;
   current: number;
   target: number;
   color: string;
 }> = ({
   label,
+  short,
   current,
   target,
   color,
 }) => (
   <View style={styles.lightMacroRow}>
     <View style={styles.lightMacroHeader}>
-      <Text style={styles.lightMacroLabel}>
-        {label}
-      </Text>
+      <View style={styles.lightMacroNameRow}>
+        <View
+          style={[
+            styles.lightMacroBadge,
+            {
+              backgroundColor:
+                `${color}18`,
+            },
+          ]}
+        >
+          <Text
+            style={[
+              styles.lightMacroBadgeText,
+              {color},
+            ]}
+          >
+            {short}
+          </Text>
+        </View>
+
+        <Text style={styles.lightMacroLabel}>
+          {label}
+        </Text>
+      </View>
 
       <Text style={styles.lightMacroValue}>
         {Math.round(current)}
@@ -496,16 +585,18 @@ React.FC<{
       </Text>
     </View>
 
-    <ProgressBar
-      progress={
-        target > 0
-          ? current *
-            100 /
-            target
-          : 0
-      }
-      color={color}
-    />
+    <View style={styles.lightMacroBarOffset}>
+      <ProgressBar
+        progress={
+          target > 0
+            ? current *
+              100 /
+              target
+            : 0
+        }
+        color={color}
+      />
+    </View>
   </View>
 );
 
@@ -618,15 +709,6 @@ React.FC<{
         target.calories
       : 0;
 
-  const remainingProtein =
-    Math.max(
-      0,
-      Math.round(
-        target.proteinG -
-        totals.proteinG,
-      ),
-    );
-
   return (
     <View style={styles.lightIntakeCard}>
       <View style={styles.lightIntakeHeader}>
@@ -658,13 +740,17 @@ React.FC<{
             {t(
               'mealScan.viewLog',
               'View log',
-            )}
+            )}{'  ›'}
           </Text>
         </TouchableOpacity>
       </View>
 
-      <View style={styles.lightCalorieRow}>
-        <View>
+      <View style={styles.intakeSummaryRow}>
+        <CalorieRing
+          progress={calorieProgress}
+        />
+
+        <View style={styles.intakeSummaryBody}>
           <View style={styles.lightCalorieLine}>
             <Text style={styles.lightConsumedValue}>
               {Math.round(
@@ -689,8 +775,11 @@ React.FC<{
         </View>
 
         <View style={styles.lightRemainingPill}>
-          <Text style={styles.lightRemainingText}>
-            {remainingCalories}{' '}
+          <Text style={styles.lightRemainingValue}>
+            {remainingCalories}
+          </Text>
+
+          <Text style={styles.lightRemainingLabel}>
             {t(
               'mealScan.kcalLeft',
               'kcal left',
@@ -699,82 +788,70 @@ React.FC<{
         </View>
       </View>
 
-      <ProgressBar
-        progress={
-          calorieProgress
-        }
-        color={NEON}
-      />
-
       <View style={styles.lightMacroList}>
         <MacroProgressRow
+          short="P"
           label={t(
             'nutrition.protein',
             'Protein',
           )}
-          current={
-            totals.proteinG
-          }
-          target={
-            target.proteinG
-          }
-          color={BLUE}
+          current={totals.proteinG}
+          target={target.proteinG}
+          color="#FF7043"
         />
 
         <MacroProgressRow
+          short="C"
           label={t(
             'nutrition.carb',
             'Carb',
           )}
-          current={
-            totals.carbsG
-          }
-          target={
-            target.carbsG
-          }
-          color={CYAN}
+          current={totals.carbsG}
+          target={target.carbsG}
+          color="#F7AE21"
         />
 
         <MacroProgressRow
+          short="F"
           label={t(
             'nutrition.fat',
             'Fat',
           )}
-          current={
-            totals.fatsG
-          }
-          target={
-            target.fatsG
-          }
-          color={YELLOW}
+          current={totals.fatsG}
+          target={target.fatsG}
+          color="#FF6C78"
         />
       </View>
 
-      <View style={styles.lightActionRow}>
-        <TouchableOpacity
-          activeOpacity={0.88}
-          style={styles.lightScanButton}
-          onPress={() =>
-            navigation.navigate(
-              'MealScanner',
-            )
-          }
-        >
-          <Text style={styles.lightScanIcon}>
-            📷
-          </Text>
+      <TouchableOpacity
+        activeOpacity={0.9}
+        style={styles.lightScanButton}
+        onPress={() =>
+          navigation.navigate(
+            'MealScanner',
+          )
+        }
+      >
+        <Text style={styles.lightScanIcon}>
+          📷
+        </Text>
 
-          <Text style={styles.lightScanText}>
-            {t(
-              'mealScan.scanFood',
-              'Scan food',
-            )}
-          </Text>
-        </TouchableOpacity>
+        <Text style={styles.lightScanText}>
+          {t(
+            'mealScan.scanFood',
+            'Scan food',
+          )}
+        </Text>
 
+        <Text style={styles.lightScanArrow}>
+          ›
+        </Text>
+      </TouchableOpacity>
+
+      <View style={styles.homeQuickRow}>
         <TouchableOpacity
-          activeOpacity={0.88}
-          style={styles.lightManualButton}
+          activeOpacity={0.86}
+          style={styles.homeQuickButton}
           onPress={() =>
             navigation.navigate(
               'MealReview',
@@ -785,25 +862,73 @@ React.FC<{
             )
           }
         >
-          <Text style={styles.lightManualText}>
-            ＋{' '}
+          <Text style={styles.homeQuickIcon}>＋</Text>
+          <Text style={styles.homeQuickText}>
             {t(
               'mealScan.manual',
               'Manual',
             )}
           </Text>
         </TouchableOpacity>
-      </View>
 
-      <View style={styles.lightAdviceBox}>
-        <View style={styles.lightAdviceHeading}>
-          <View style={styles.lightAdviceIcon}>
-            <Text style={styles.lightAdviceIconText}>
+        <TouchableOpacity
+          activeOpacity={0.86}
+          style={styles.homeQuickButton}
+          onPress={() =>
+            navigation.navigate(
+              'FavoriteMeals',
+            )
+          }
+        >
+          <Text style={styles.homeQuickIcon}>♥</Text>
+          <Text style={styles.homeQuickTextDark}>
+            {t(
+              'mealScan.favorites',
+              'Favorites',
+            )}
+          </Text>
+        </TouchableOpacity>
+
+        <TouchableOpacity
+          activeOpacity={0.86}
+          style={styles.homeQuickButton}
+          onPress={() =>
+            navigation.navigate(
+              'QuickAdd',
+            )
+          }
+        >
+          <Text style={styles.homeQuickIcon}>▦</Text>
+          <Text style={styles.homeQuickTextDark}>
+            {t(
+              'mealScan.frequent',
+              'Frequent',
+            )}
+          </Text>
+        </TouchableOpacity>
+      </View>
+    </View>
+  );
+};
+
+const LightGuidanceCard:
+React.FC<{
+  tip: string;
+}> = ({tip}) => {
+  const {t} =
+    useTranslation();
+
+  return (
+    <View style={styles.guidanceHeroCard}>
+      <View style={styles.guidanceHeroBody}>
+        <View style={styles.guidanceHeroTitleRow}>
+          <View style={styles.guidanceBulb}>
+            <Text style={styles.guidanceBulbText}>
               ✦
             </Text>
           </View>
 
-          <Text style={styles.lightAdviceTitle}>
+          <Text style={styles.guidanceHeroTitle}>
             {t(
               'caloLens.todayAdvice',
               'Today’s guidance',
@@ -811,41 +936,21 @@ React.FC<{
           </Text>
         </View>
 
-        <Text style={styles.lightAdviceLine}>
-          •{' '}
-          {remainingCalories > 0
-            ? t(
-                'mealScan.remainingCaloriesAdvice',
-                {
-                  count:
-                    remainingCalories,
-                  defaultValue:
-                    'You still have about {{count}} kcal available today. Prioritize a balanced meal.',
-                },
-              )
-            : t(
-                'mealScan.calorieGoalReachedAdvice',
-                'You have reached your calorie target. Keep the rest of the day light and balanced.',
-              )}
+        <Text
+          style={styles.guidanceHeroText}
+          numberOfLines={3}
+        >
+          {tip}
         </Text>
+      </View>
 
-        <Text style={styles.lightAdviceLine}>
-          •{' '}
-          {remainingProtein > 0
-            ? t(
-                'mealScan.remainingProteinAdvice',
-                {
-                  count:
-                    remainingProtein,
-                  defaultValue:
-                    'You still need about {{count}} g protein. Consider lean meat, fish, eggs, yogurt or whey.',
-                },
-              )
-            : t(
-                'mealScan.proteinGoalReachedAdvice',
-                'Your protein target is on track today.',
-              )}
-        </Text>
+      <View style={styles.guidanceImageWrap}>
+        <View style={styles.guidanceOrangeHalo} />
+        <Image
+          source={GUIDANCE_FOOD_IMAGE}
+          resizeMode="cover"
+          style={styles.guidanceFoodImage}
+        />
       </View>
     </View>
   );
@@ -1249,7 +1354,7 @@ React.FC = () => {
     <View style={styles.screen}>
       <StatusBar
         barStyle="dark-content"
-        backgroundColor="#F5F8F2"
+        backgroundColor="#FFF8F2"
         translucent={false}
       />
 
@@ -1280,18 +1385,18 @@ React.FC = () => {
             styles.content
           }
         >
-          <ImageBackground
-            source={HERO_IMAGE}
-            resizeMode="cover"
-            style={styles.hero}
-            imageStyle={
-              styles.heroImage
-            }
-          >
+          <View style={styles.hero}>
             <View
-              style={
-                styles.heroOverlay
-              }
+              pointerEvents="none"
+              style={styles.heroDecorTop}
+            />
+            <View
+              pointerEvents="none"
+              style={styles.heroDecorDotOne}
+            />
+            <View
+              pointerEvents="none"
+              style={styles.heroDecorDotTwo}
             />
 
             <View style={styles.brandRow}>
@@ -1320,41 +1425,63 @@ React.FC = () => {
                   )
                 }
               >
-                <Text
-                  style={
-                    styles.profileIcon
-                  }
-                >
+                <Text style={styles.profileIcon}>
                   👤
                 </Text>
               </TouchableOpacity>
             </View>
 
-            <View style={styles.heroTextBlock}>
-              <Text style={styles.heroKicker}>
-                {t(
-                  'caloLens.homeKicker',
-                  'YOUR DAILY NUTRITION',
-                )}
-              </Text>
+            <View style={styles.heroBody}>
+              <View style={styles.heroTextBlock}>
+                <Text style={styles.heroTitle}>
+                  {t(
+                    'caloLens.homeTitle',
+                    'Eat with a clear target',
+                  )}
+                </Text>
 
-              <Text style={styles.heroTitle}>
-                {t(
-                  'caloLens.homeTitle',
-                  'Eat with a clear target',
-                )}
-              </Text>
+                <Text style={styles.heroSubtitle}>
+                  {t(
+                    'caloLens.homeSubtitle',
+                    'Scan meals, track calories and adjust portions around your personal goal.',
+                  )}
+                </Text>
+              </View>
 
-              <Text style={styles.heroSubtitle}>
-                {t(
-                  'caloLens.homeSubtitle',
-                  'Scan meals, track calories and adjust portions around your personal goal.',
-                )}
-              </Text>
+              <View style={styles.heroFoodWrap}>
+                <View style={styles.heroFoodHalo} />
+                <Image
+                  source={HERO_FOOD_IMAGE}
+                  resizeMode="cover"
+                  style={styles.heroFoodImage}
+                />
+              </View>
             </View>
-          </ImageBackground>
+          </View>
 
           <View style={styles.mainContent}>
+            <TouchableOpacity
+              activeOpacity={0.9}
+              style={styles.discoverCard}
+              onPress={() => navigation.navigate('TastePilotFeature')}
+            >
+              <View style={styles.discoverIconWrap}>
+                <Text style={styles.discoverIcon}>🍽️</Text>
+              </View>
+              <View style={styles.discoverCopy}>
+                <Text style={styles.discoverBadge}>
+                  {t('caloLensDiscover.badge', 'AI DISCOVER')}
+                </Text>
+                <Text style={styles.discoverTitle}>
+                  {t('caloLensDiscover.title', 'Discover meals')}
+                </Text>
+                <Text style={styles.discoverBody}>
+                  {t('caloLensDiscover.body', 'Get meal ideas, local food and nearby places that fit your taste.')}
+                </Text>
+              </View>
+              <Text style={styles.discoverArrow}>›</Text>
+            </TouchableOpacity>
+
             {!plan ? (
               <View style={styles.emptyCard}>
                 <Text style={styles.emptyIcon}>
@@ -1411,6 +1538,10 @@ React.FC = () => {
                     fatsG:
                       plan.fatsG,
                   }}
+                />
+
+                <LightGuidanceCard
+                  tip={firstTip}
                 />
 
                 <NextMealCard
@@ -1602,31 +1733,6 @@ React.FC = () => {
                   />
                 </View>
 
-                <View style={styles.adviceCard}>
-                  <View style={styles.adviceHeader}>
-                    <View style={styles.adviceIcon}>
-                      <Text
-                        style={
-                          styles.adviceIconText
-                        }
-                      >
-                        ✦
-                      </Text>
-                    </View>
-
-                    <Text style={styles.adviceTitle}>
-                      {t(
-                        'caloLens.todayAdvice',
-                        'Today’s guidance',
-                      )}
-                    </Text>
-                  </View>
-
-                  <Text style={styles.adviceText}>
-                    {firstTip}
-                  </Text>
-                </View>
-
                 <LightHydrationCard
                   targetLiters={
                     plan.waterLiters
@@ -1732,7 +1838,7 @@ const styles =
       height: 300,
       borderRadius: 150,
       backgroundColor:
-        'rgba(99, 201, 52, 0.10)',
+        'rgba(255, 90, 31, 0.10)',
     },
     bottomGlow: {
       position: 'absolute',
@@ -1742,62 +1848,83 @@ const styles =
       height: 300,
       borderRadius: 150,
       backgroundColor:
-        'rgba(24, 163, 155, 0.07)',
+        'rgba(244, 123, 53, 0.07)',
     },
     hero: {
-      height: 325,
+      height: 305,
       paddingHorizontal: 18,
-      paddingTop: 13,
-      paddingBottom: 35,
-      justifyContent:
-        'space-between',
+      paddingTop: 12,
+      paddingBottom: 28,
+      justifyContent: 'space-between',
       overflow: 'hidden',
-      backgroundColor: '#EEF4EA',
+      backgroundColor: '#FFF9F3',
     },
-    heroImage: {
-      opacity: 0.46,
+    heroDecorTop: {
+      position: 'absolute',
+      top: -90,
+      right: -65,
+      width: 225,
+      height: 225,
+      borderRadius: 112,
+      backgroundColor: '#FFE6CF',
+      transform: [
+        {rotate: '14deg'},
+      ],
     },
-    heroOverlay: {
-      ...StyleSheet.absoluteFillObject,
-      backgroundColor:
-        'rgba(248, 251, 246, 0.57)',
+    heroDecorDotOne: {
+      position: 'absolute',
+      top: 104,
+      right: 188,
+      width: 14,
+      height: 14,
+      borderRadius: 7,
+      backgroundColor: '#FF7A23',
+      opacity: 0.85,
+    },
+    heroDecorDotTwo: {
+      position: 'absolute',
+      top: 132,
+      right: 211,
+      width: 7,
+      height: 7,
+      borderRadius: 4,
+      backgroundColor: '#F8B329',
+      opacity: 0.9,
     },
     brandRow: {
       flexDirection: 'row',
       alignItems: 'center',
-      justifyContent:
-        'space-between',
+      justifyContent: 'space-between',
+      zIndex: 4,
     },
     brand: {
       color: TEXT,
-      fontSize: 27,
+      fontSize: 29,
       fontWeight: '900',
-      letterSpacing: -0.8,
+      letterSpacing: -1,
     },
     brandAccent: {
       color: NEON,
     },
     brandTag: {
-      color: CYAN,
+      color: '#A45A34',
       fontSize: 9,
       fontWeight: '900',
-      letterSpacing: 1.05,
-      marginTop: 2,
+      letterSpacing: 1.15,
+      marginTop: 1,
     },
     profileButton: {
-      width: 44,
-      height: 44,
-      borderRadius: 22,
+      width: 45,
+      height: 45,
+      borderRadius: 23,
       alignItems: 'center',
       justifyContent: 'center',
-      backgroundColor:
-        'rgba(255,255,255,0.90)',
+      backgroundColor: '#FFFFFF',
       borderWidth: 1,
-      borderColor:
-        'rgba(99, 201, 52, 0.33)',
-      shadowColor: '#748578',
+      borderColor: '#F4D4C1',
+      shadowColor: '#9B6849',
       shadowOpacity: 0.13,
-      shadowRadius: 8,
+      shadowRadius: 9,
       shadowOffset: {
         width: 0,
         height: 4,
@@ -1805,37 +1932,109 @@ const styles =
       elevation: 3,
     },
     profileIcon: {
-      fontSize: 18,
+      fontSize: 19,
+    },
+    heroBody: {
+      flex: 1,
+      flexDirection: 'row',
+      alignItems: 'center',
+      marginTop: 10,
+      position: 'relative',
     },
     heroTextBlock: {
-      maxWidth: 335,
-    },
-    heroKicker: {
-      color: CYAN,
-      fontSize: 11,
-      fontWeight: '900',
-      letterSpacing: 1,
+      width: '58%',
+      paddingTop: 4,
+      zIndex: 3,
     },
     heroTitle: {
       color: TEXT,
-      fontSize: 34,
-      lineHeight: 40,
+      fontSize: 31,
+      lineHeight: 35,
       fontWeight: '900',
-      letterSpacing: -0.8,
-      marginTop: 8,
+      letterSpacing: -0.9,
+      marginTop: 3,
     },
     heroSubtitle: {
-      color: '#445048',
-      fontSize: 14,
-      lineHeight: 21,
+      color: '#554C45',
+      fontSize: 12.5,
+      lineHeight: 18,
       fontWeight: '600',
-      marginTop: 9,
-      maxWidth: 320,
+      marginTop: 10,
+      maxWidth: 205,
+    },
+    heroFoodWrap: {
+      position: 'absolute',
+      right: -25,
+      bottom: -22,
+      width: 190,
+      height: 190,
+      alignItems: 'center',
+      justifyContent: 'center',
+      zIndex: 2,
+    },
+    heroFoodHalo: {
+      position: 'absolute',
+      right: -24,
+      bottom: -30,
+      width: 196,
+      height: 196,
+      borderRadius: 98,
+      backgroundColor: '#FF7A23',
+      transform: [
+        {rotate: '-12deg'},
+      ],
+    },
+    heroFoodImage: {
+      width: 166,
+      height: 166,
+      borderRadius: 83,
+      borderWidth: 4,
+      borderColor: '#FFF7EF',
+      shadowColor: '#9C5D33',
+      shadowOpacity: 0.2,
+      shadowRadius: 12,
+      shadowOffset: {
+        width: 0,
+        height: 6,
+      },
+      elevation: 5,
     },
     mainContent: {
-      marginTop: -22,
-      paddingHorizontal: 8,
+      marginTop: -16,
+      paddingHorizontal: 12,
     },
+    discoverCard: {
+      marginTop: 12,
+      marginBottom: 8,
+      borderRadius: 24,
+      padding: 16,
+      flexDirection: 'row',
+      alignItems: 'center',
+      backgroundColor: '#FFF1E6',
+      borderWidth: 1,
+      borderColor: '#FFD1B7',
+      shadowColor: '#B9896E',
+      shadowOpacity: 0.10,
+      shadowRadius: 12,
+      shadowOffset: {width: 0, height: 6},
+      elevation: 3,
+    },
+    discoverIconWrap: {
+      width: 56,
+      height: 56,
+      borderRadius: 18,
+      backgroundColor: '#FF5A1F',
+      alignItems: 'center',
+      justifyContent: 'center',
+      marginRight: 13,
+    },
+    discoverIcon: {fontSize: 27},
+    discoverCopy: {flex: 1},
+    discoverBadge: {fontSize: 10, fontWeight: '900', letterSpacing: 1.2, color: '#C84E20'},
+    discoverTitle: {fontSize: 18, lineHeight: 23, fontWeight: '900', color: '#21170F', marginTop: 3},
+    discoverBody: {fontSize: 12, lineHeight: 18, color: '#78695F', marginTop: 4},
+    discoverArrow: {fontSize: 28, fontWeight: '900', color: '#FF5A1F', marginLeft: 8},
+
     sectionTitle: {
       color: TEXT,
       fontSize: 20,
@@ -1858,7 +2057,7 @@ const styles =
       paddingHorizontal: 12,
       paddingVertical: 11,
       marginBottom: 8,
-      shadowColor: '#879487',
+      shadowColor: '#B89079',
       shadowOpacity: 0.08,
       shadowRadius: 8,
       shadowOffset: {
@@ -1903,9 +2102,9 @@ const styles =
       borderRadius: 22,
       borderWidth: 1,
       borderColor:
-        'rgba(99, 201, 52, 0.30)',
+        'rgba(255, 90, 31, 0.30)',
       padding: 18,
-      shadowColor: '#879487',
+      shadowColor: '#B89079',
       shadowOpacity: 0.10,
       shadowRadius: 12,
       shadowOffset: {
@@ -1945,14 +2144,15 @@ const styles =
     },
     lightIntakeCard: {
       backgroundColor: CARD,
-      borderRadius: 24,
+      borderRadius: 28,
       borderWidth: 1,
-      borderColor:
-        'rgba(99, 201, 52, 0.26)',
-      padding: 16,
-      marginBottom: 14,
-      shadowColor: '#7C8B7E',
-      shadowOpacity: 0.11,
+      borderColor: '#F3E2D6',
+      paddingHorizontal: 16,
+      paddingTop: 16,
+      paddingBottom: 14,
+      marginBottom: 12,
+      shadowColor: '#A56B46',
+      shadowOpacity: 0.12,
       shadowRadius: 16,
       shadowOffset: {
         width: 0,
@@ -1966,114 +2166,155 @@ const styles =
       justifyContent: 'space-between',
     },
     lightKicker: {
-      color: CYAN,
+      color: NEON,
       fontSize: 10,
       fontWeight: '900',
       letterSpacing: 1,
     },
     lightIntakeTitle: {
       color: TEXT,
-      fontSize: 22,
+      fontSize: 23,
+      lineHeight: 28,
       fontWeight: '900',
-      marginTop: 4,
+      marginTop: 2,
+      letterSpacing: -0.5,
     },
     lightViewLog: {
       color: NEON,
-      fontSize: 13,
+      fontSize: 12.5,
       fontWeight: '900',
-      marginTop: 5,
+      marginTop: 7,
     },
-    lightCalorieRow: {
+    intakeSummaryRow: {
       flexDirection: 'row',
       alignItems: 'center',
-      justifyContent: 'space-between',
-      marginTop: 18,
-      marginBottom: 11,
+      marginTop: 16,
+    },
+    calorieRingWrap: {
+      alignItems: 'center',
+      justifyContent: 'center',
+    },
+    calorieRingCenter: {
+      position: 'absolute',
+      alignItems: 'center',
+      justifyContent: 'center',
+    },
+    calorieRingPercent: {
+      color: TEXT,
+      fontSize: 13,
+      fontWeight: '900',
+    },
+    intakeSummaryBody: {
+      flex: 1,
+      paddingHorizontal: 11,
     },
     lightCalorieLine: {
       flexDirection: 'row',
       alignItems: 'baseline',
+      flexWrap: 'nowrap',
     },
     lightConsumedValue: {
-      color: NEON,
-      fontSize: 36,
-      lineHeight: 40,
+      color: '#4DAE39',
+      fontSize: 30,
+      lineHeight: 34,
       fontWeight: '900',
+      letterSpacing: -0.7,
     },
     lightTargetValue: {
       color: TEXT,
-      fontSize: 20,
+      fontSize: 18,
       fontWeight: '900',
     },
     lightConsumedLabel: {
       color: MUTED,
-      fontSize: 11,
-      marginTop: 3,
+      fontSize: 10.5,
+      marginTop: 2,
+      fontWeight: '600',
     },
     lightRemainingPill: {
-      backgroundColor:
-        'rgba(99, 201, 52, 0.11)',
+      minWidth: 78,
+      backgroundColor: '#FFF4E8',
       borderWidth: 1,
-      borderColor:
-        'rgba(99, 201, 52, 0.30)',
-      borderRadius: 999,
-      paddingHorizontal: 12,
-      paddingVertical: 8,
-      marginLeft: 10,
+      borderColor: '#F6DEC7',
+      borderRadius: 16,
+      paddingHorizontal: 10,
+      paddingVertical: 9,
+      alignItems: 'center',
+      justifyContent: 'center',
     },
-    lightRemainingText: {
-      color: '#4D9C29',
-      fontSize: 11,
+    lightRemainingValue: {
+      color: TEXT,
+      fontSize: 16,
+      lineHeight: 19,
       fontWeight: '900',
     },
+    lightRemainingLabel: {
+      color: MUTED,
+      fontSize: 9.5,
+      fontWeight: '700',
+      marginTop: 1,
+    },
     lightProgressTrack: {
-      height: 9,
+      height: 7,
       borderRadius: 999,
       overflow: 'hidden',
-      backgroundColor: TRACK,
+      backgroundColor: '#F2ECE7',
     },
     lightProgressFill: {
       height: '100%',
       borderRadius: 999,
     },
     lightMacroList: {
-      marginTop: 17,
+      marginTop: 16,
     },
     lightMacroRow: {
-      marginBottom: 13,
+      marginBottom: 11,
     },
     lightMacroHeader: {
       flexDirection: 'row',
       alignItems: 'center',
       justifyContent: 'space-between',
-      marginBottom: 7,
+      marginBottom: 6,
+    },
+    lightMacroNameRow: {
+      flexDirection: 'row',
+      alignItems: 'center',
+    },
+    lightMacroBadge: {
+      width: 24,
+      height: 24,
+      borderRadius: 12,
+      alignItems: 'center',
+      justifyContent: 'center',
+      marginRight: 8,
+    },
+    lightMacroBadgeText: {
+      fontSize: 10,
+      fontWeight: '900',
     },
     lightMacroLabel: {
-      color: MUTED,
+      color: '#4F4A45',
       fontSize: 12,
       fontWeight: '800',
     },
     lightMacroValue: {
       color: TEXT,
-      fontSize: 12,
+      fontSize: 11.5,
       fontWeight: '900',
     },
-    lightActionRow: {
-      flexDirection: 'row',
-      marginTop: 7,
-      marginHorizontal: -4,
+    lightMacroBarOffset: {
+      marginLeft: 32,
     },
     lightScanButton: {
-      flex: 1.4,
-      minHeight: 52,
+      minHeight: 54,
       flexDirection: 'row',
       alignItems: 'center',
       justifyContent: 'center',
       backgroundColor: NEON,
-      borderRadius: 999,
-      marginHorizontal: 4,
+      borderRadius: 18,
+      marginTop: 7,
       shadowColor: NEON,
-      shadowOpacity: 0.20,
+      shadowOpacity: 0.2,
       shadowRadius: 10,
       shadowOffset: {
         width: 0,
@@ -2082,78 +2323,145 @@ const styles =
       elevation: 4,
     },
     lightScanIcon: {
-      fontSize: 15,
-      marginRight: 7,
+      fontSize: 16,
+      marginRight: 8,
     },
     lightScanText: {
-      color: '#10230F',
-      fontSize: 14,
+      color: '#FFFFFF',
+      fontSize: 15,
       fontWeight: '900',
     },
-    lightManualButton: {
+    lightScanArrow: {
+      position: 'absolute',
+      right: 18,
+      color: '#FFFFFF',
+      fontSize: 26,
+      lineHeight: 28,
+      fontWeight: '500',
+    },
+    homeQuickRow: {
+      flexDirection: 'row',
+      marginHorizontal: -3,
+      marginTop: 10,
+    },
+    homeQuickButton: {
       flex: 1,
-      minHeight: 52,
-      alignItems: 'center',
-      justifyContent: 'center',
-      backgroundColor: '#F7FAF5',
-      borderRadius: 999,
+      minHeight: 42,
+      marginHorizontal: 3,
+      borderRadius: 15,
       borderWidth: 1,
-      borderColor:
-        'rgba(24, 163, 155, 0.32)',
-      marginHorizontal: 4,
-    },
-    lightManualText: {
-      color: CYAN,
-      fontSize: 13,
-      fontWeight: '900',
-    },
-    lightAdviceBox: {
-      backgroundColor: '#FFF9E8',
-      borderRadius: 17,
-      borderWidth: 1,
-      borderColor: '#F1D99A',
-      padding: 13,
-      marginTop: 14,
-    },
-    lightAdviceHeading: {
+      borderColor: '#F2DCCB',
+      backgroundColor: '#FFFDFB',
       flexDirection: 'row',
       alignItems: 'center',
-      marginBottom: 8,
+      justifyContent: 'center',
+      paddingHorizontal: 5,
     },
-    lightAdviceIcon: {
+    homeQuickIcon: {
+      color: NEON,
+      fontSize: 14,
+      fontWeight: '900',
+      marginRight: 4,
+    },
+    homeQuickText: {
+      color: NEON,
+      fontSize: 10.5,
+      fontWeight: '900',
+    },
+    homeQuickTextDark: {
+      color: TEXT,
+      fontSize: 10.5,
+      fontWeight: '800',
+    },
+    guidanceHeroCard: {
+      minHeight: 126,
+      flexDirection: 'row',
+      overflow: 'hidden',
+      backgroundColor: '#FFF2CE',
+      borderRadius: 24,
+      borderWidth: 1,
+      borderColor: '#F7DFA4',
+      marginBottom: 14,
+      shadowColor: '#D49B43',
+      shadowOpacity: 0.08,
+      shadowRadius: 10,
+      shadowOffset: {
+        width: 0,
+        height: 4,
+      },
+      elevation: 2,
+    },
+    guidanceHeroBody: {
+      flex: 1,
+      paddingLeft: 16,
+      paddingTop: 15,
+      paddingBottom: 14,
+      paddingRight: 3,
+      zIndex: 3,
+    },
+    guidanceHeroTitleRow: {
+      flexDirection: 'row',
+      alignItems: 'center',
+    },
+    guidanceBulb: {
       width: 30,
       height: 30,
       borderRadius: 15,
+      backgroundColor: '#FFE5A1',
       alignItems: 'center',
       justifyContent: 'center',
-      backgroundColor: '#FFF0B8',
       marginRight: 8,
     },
-    lightAdviceIconText: {
-      color: YELLOW,
+    guidanceBulbText: {
+      color: '#F5A800',
       fontSize: 15,
       fontWeight: '900',
     },
-    lightAdviceTitle: {
-      color: '#8B6500',
-      fontSize: 14,
+    guidanceHeroTitle: {
+      color: '#68410B',
+      fontSize: 15,
       fontWeight: '900',
     },
-    lightAdviceLine: {
-      color: '#4C504B',
-      fontSize: 12,
-      lineHeight: 19,
-      marginTop: 3,
+    guidanceHeroText: {
+      color: '#6B5A45',
+      fontSize: 11.5,
+      lineHeight: 17,
+      marginTop: 9,
+      paddingRight: 4,
+    },
+    guidanceImageWrap: {
+      width: 132,
+      position: 'relative',
+      alignItems: 'flex-end',
+      justifyContent: 'flex-end',
+    },
+    guidanceOrangeHalo: {
+      position: 'absolute',
+      right: -46,
+      bottom: -54,
+      width: 176,
+      height: 176,
+      borderRadius: 88,
+      backgroundColor: '#FFC35A',
+      opacity: 0.36,
+    },
+    guidanceFoodImage: {
+      width: 122,
+      height: 106,
+      borderTopLeftRadius: 55,
+      borderTopRightRadius: 0,
+      borderBottomLeftRadius: 0,
+      borderBottomRightRadius: 22,
     },
     targetCard: {
       backgroundColor: CARD,
       borderRadius: 20,
       borderWidth: 1,
       borderColor:
-        'rgba(24, 163, 155, 0.22)',
+        'rgba(244, 123, 53, 0.22)',
       padding: 14,
       marginBottom: 12,
-      shadowColor: '#879487',
+      shadowColor: '#B89079',
       shadowOpacity: 0.07,
       shadowRadius: 9,
       shadowOffset: {
@@ -2273,7 +2581,7 @@ const styles =
       borderRadius: 19,
       borderWidth: 1,
       borderColor:
-        'rgba(24, 163, 155, 0.22)',
+        'rgba(244, 123, 53, 0.22)',
       padding: 13,
       marginBottom: 12,
     },
@@ -2284,7 +2592,7 @@ const styles =
       alignItems: 'center',
       justifyContent: 'center',
       backgroundColor:
-        'rgba(43, 130, 217, 0.11)',
+        'rgba(255, 147, 80, 0.11)',
       marginRight: 11,
     },
     lightHydrationIconText: {
@@ -2319,7 +2627,7 @@ const styles =
       borderRadius: 14,
       borderWidth: 1,
       borderColor:
-        'rgba(43, 130, 217, 0.18)',
+        'rgba(255, 147, 80, 0.18)',
       paddingHorizontal: 10,
       paddingVertical: 8,
       marginLeft: 9,
@@ -2345,11 +2653,11 @@ const styles =
       borderRadius: 18,
       borderWidth: 1,
       borderColor:
-        'rgba(99, 201, 52, 0.22)',
+        'rgba(255, 90, 31, 0.22)',
       paddingHorizontal: 14,
       paddingVertical: 12,
       marginBottom: 10,
-      shadowColor: '#879487',
+      shadowColor: '#B89079',
       shadowOpacity: 0.07,
       shadowRadius: 8,
       shadowOffset: {
@@ -2392,7 +2700,7 @@ const styles =
       borderRadius: 23,
       borderWidth: 1,
       borderColor:
-        'rgba(99, 201, 52, 0.28)',
+        'rgba(255, 90, 31, 0.28)',
       padding: 17,
       shadowColor: '#657168',
       shadowOpacity: 0.16,
@@ -2423,7 +2731,7 @@ const styles =
       marginBottom: 15,
     },
     inputLabel: {
-      color: '#455047',
+      color: '#5F544D',
       fontSize: 12,
       fontWeight: '900',
       marginBottom: 7,
@@ -2449,9 +2757,9 @@ const styles =
       borderRadius: 14,
       borderWidth: 1,
       borderColor:
-        'rgba(24, 163, 155, 0.32)',
+        'rgba(244, 123, 53, 0.32)',
       backgroundColor:
-        'rgba(24, 163, 155, 0.08)',
+        'rgba(244, 123, 53, 0.08)',
       paddingVertical: 12,
       alignItems: 'center',
       marginRight: 4,

@@ -1,4 +1,6 @@
 // FILE: src/screens/WeeklyInsightsScreen.tsx
+import FoodAccentCard from '../components/FoodAccentCard';
+import HeroFoodCornerAccent from '../components/HeroFoodCornerAccent';
 import React, {
   useCallback,
   useMemo,
@@ -40,14 +42,14 @@ import {
 const PROFILE_KEY =
   'user:profile';
 
-const BG = '#F5F8F2';
+const BG = '#FFF8F2';
 const CARD = '#FFFFFF';
-const TEXT = '#17211A';
-const MUTED = '#6D786F';
-const NEON = '#63C934';
-const CYAN = '#18A39B';
-const YELLOW = '#D99A00';
-const BORDER = '#DDE8D9';
+const TEXT = '#21170F';
+const MUTED = '#78695F';
+const NEON = '#FF6A21';
+const CYAN = '#F29132';
+const YELLOW = '#F5A623';
+const BORDER = '#F1D9C8';
 
 const emptyReport:
 WeeklyNutritionReport = {
@@ -217,6 +219,8 @@ React.FC = () => {
         backgroundColor={BG}
       />
 
+      <HeroFoodCornerAccent />
+
       <ScrollView
         showsVerticalScrollIndicator={false}
         contentContainerStyle={styles.content}
@@ -341,7 +345,7 @@ React.FC = () => {
                   'caloLensInsights.loggedDays',
                   'Days logged',
                 )}
-                accent="#2B82D9"
+                accent="#FF9350"
               />
             </View>
 
@@ -420,6 +424,8 @@ React.FC = () => {
             </View>
           </>
         )}
+
+        <FoodAccentCard variant="guidance" height={160} />
       </ScrollView>
     </View>
   );
@@ -446,10 +452,10 @@ const styles =
       paddingVertical: 6,
       borderRadius: 999,
       backgroundColor:
-        'rgba(24, 163, 155, 0.08)',
+        'rgba(242, 145, 50, 0.08)',
       borderWidth: 1,
       borderColor:
-        'rgba(24, 163, 155, 0.28)',
+        'rgba(242, 145, 50, 0.28)',
       marginBottom: 13,
     },
     kickerText: {
@@ -478,10 +484,10 @@ const styles =
       borderRadius: 22,
       borderWidth: 1,
       borderColor:
-        'rgba(99, 201, 52, 0.25)',
+        'rgba(255, 106, 33, 0.25)',
       padding: 15,
       marginBottom: 12,
-      shadowColor: '#879487',
+      shadowColor: '#C28A66',
       shadowOpacity: 0.08,
       shadowRadius: 11,
       shadowOffset: {
@@ -498,7 +504,7 @@ const styles =
       borderColor: NEON,
       alignItems: 'center',
       justifyContent: 'center',
-      backgroundColor: '#F7FAF5',
+      backgroundColor: '#FFFBF7',
       marginRight: 13,
     },
     scoreValue: {
@@ -591,7 +597,7 @@ const styles =
       height: 8,
       borderRadius: 999,
       overflow: 'hidden',
-      backgroundColor: '#E8EEE5',
+      backgroundColor: '#F6E8DC',
     },
     dayFill: {
       height: '100%',
@@ -646,7 +652,7 @@ const styles =
       borderRadius: 21,
       borderWidth: 1,
       borderColor:
-        'rgba(99, 201, 52, 0.22)',
+        'rgba(255, 106, 33, 0.22)',
       padding: 22,
       alignItems: 'center',
     },

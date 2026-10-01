@@ -30,12 +30,15 @@ import {
   mealOptionToCandidate,
   selectNextMealSuggestions,
 } from '../nutrition/caloLensInsights';
+import type {
+  MealSuggestion as TastePilotMealSuggestion,
+} from '../tastepilot/types';
 
-const TEXT = '#17211A';
-const MUTED = '#6D786F';
-const NEON = '#63C934';
-const CYAN = '#18A39B';
-const BORDER = '#DDE8D9';
+const TEXT = '#21170F';
+const MUTED = '#78695F';
+const NEON = '#FF5A1F';
+const CYAN = '#F47B35';
+const BORDER = '#F0DDD0';
 
 export const NextMealCard:
 React.FC<{
@@ -100,6 +103,40 @@ React.FC<{
             suggestion,
           ),
         ],
+      },
+    );
+  };
+
+  const findNearbySuggestion = (
+    suggestion:
+      typeof suggestions[number],
+  ) => {
+    const meal: TastePilotMealSuggestion = {
+      id: `calolens-${suggestion.id}`,
+      canonicalId: suggestion.id,
+      name: suggestion.title,
+      canonicalName: suggestion.title,
+      cuisine: 'CaloLens',
+      canonicalCuisine: 'CaloLens',
+      estimatedMin: suggestion.calories,
+      estimatedMax: suggestion.calories,
+      reason: suggestion.description,
+      searchKeyword: suggestion.title,
+      mealType: suggestion.type,
+      recommendationSource: 'ai',
+    };
+
+    navigation.navigate(
+      'TastePilotFeature',
+      {
+        screen: 'Restaurants',
+        params: {
+          meal,
+          mode: 'daily',
+          initialFilter: 'all',
+          initialSort: 'distance',
+          source: 'calolens-next-meal',
+        },
       },
     );
   };
@@ -175,15 +212,9 @@ React.FC<{
 
       {suggestions.map(
         suggestion => (
-          <TouchableOpacity
+          <View
             key={suggestion.id}
-            activeOpacity={0.86}
             style={styles.suggestion}
-            onPress={() =>
-              addSuggestion(
-                suggestion,
-              )
-            }
           >
             <View style={styles.suggestionBody}>
               <Text style={styles.suggestionTitle}>
@@ -204,14 +235,50 @@ React.FC<{
                 {'  •  '}
                 {suggestion.fatsG}g F
               </Text>
+
+              <TouchableOpacity
+                activeOpacity={0.84}
+                style={styles.nearbyButton}
+                onPress={() =>
+                  findNearbySuggestion(
+                    suggestion,
+                  )
+                }
+              >
+                <Text style={styles.nearbyIcon}>
+                  📍
+                </Text>
+                <Text style={styles.nearbyButtonText}>
+                  {t(
+                    'caloLensInsights.findNearby',
+                    'Find nearby',
+                  )}
+                </Text>
+                <Text style={styles.nearbyArrow}>
+                  ›
+                </Text>
+              </TouchableOpacity>
             </View>
 
-            <View style={styles.addButton}>
+            <TouchableOpacity
+              activeOpacity={0.86}
+              style={styles.addButton}
+              onPress={() =>
+                addSuggestion(
+                  suggestion,
+                )
+              }
+              accessibilityRole="button"
+              accessibilityLabel={t(
+                'caloLensInsights.addToday',
+                'Add today',
+              )}
+            >
               <Text style={styles.addButtonText}>
                 +
               </Text>
-            </View>
-          </TouchableOpacity>
+            </TouchableOpacity>
+          </View>
         ),
       )}
     </View>
@@ -225,10 +292,10 @@ const styles =
       borderRadius: 22,
       borderWidth: 1,
       borderColor:
-        'rgba(24, 163, 155, 0.24)',
+        'rgba(244, 123, 53, 0.24)',
       padding: 14,
       marginBottom: 13,
-      shadowColor: '#879487',
+      shadowColor: '#B89079',
       shadowOpacity: 0.08,
       shadowRadius: 11,
       shadowOffset: {
@@ -262,7 +329,7 @@ const styles =
       alignItems: 'center',
       justifyContent: 'center',
       backgroundColor:
-        'rgba(99, 201, 52, 0.10)',
+        'rgba(255, 90, 31, 0.10)',
     },
     iconText: {
       fontSize: 19,
@@ -299,11 +366,11 @@ const styles =
       backgroundColor: BORDER,
     },
     suggestion: {
-      minHeight: 76,
+      minHeight: 96,
       flexDirection: 'row',
       alignItems: 'center',
       borderTopWidth: 1,
-      borderTopColor: '#E8EEE5',
+      borderTopColor: '#F3E8E0',
       paddingVertical: 10,
     },
     suggestionBody: {
@@ -326,10 +393,38 @@ const styles =
       fontWeight: '900',
       marginTop: 5,
     },
+    nearbyButton: {
+      alignSelf: 'flex-start',
+      minHeight: 32,
+      flexDirection: 'row',
+      alignItems: 'center',
+      borderRadius: 16,
+      borderWidth: 1,
+      borderColor: 'rgba(255, 90, 31, 0.26)',
+      backgroundColor: 'rgba(255, 90, 31, 0.08)',
+      paddingHorizontal: 10,
+      marginTop: 8,
+    },
+    nearbyIcon: {
+      fontSize: 13,
+      marginRight: 5,
+    },
+    nearbyButtonText: {
+      color: NEON,
+      fontSize: 10,
+      fontWeight: '900',
+    },
+    nearbyArrow: {
+      color: NEON,
+      fontSize: 16,
+      fontWeight: '900',
+      marginLeft: 5,
+      marginTop: -1,
+    },
     addButton: {
-      width: 34,
-      height: 34,
-      borderRadius: 17,
+      width: 38,
+      height: 38,
+      borderRadius: 19,
       alignItems: 'center',
       justifyContent: 'center',
       backgroundColor: NEON,

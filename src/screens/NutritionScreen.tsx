@@ -1,3 +1,5 @@
+import FoodAccentCard from '../components/FoodAccentCard';
+import HeroFoodCornerAccent from '../components/HeroFoodCornerAccent';
 import React, { useMemo, useState, useCallback } from 'react';
 import {
   View,
@@ -33,16 +35,16 @@ import { markNutritionTipRead } from '../services/gamification';
 
 const PROFILE_KEY = 'user:profile';
 
-const BG = '#F5F8F2';
+const BG = '#FFF8F2';
 const CARD = '#FFFFFF';
-const CARD_2 = '#F0F5ED';
-const TEXT = '#17211A';
-const MUTED = '#6D786F';
-const NEON = '#63C934';
-const CYAN = '#18A39B';
+const CARD_2 = '#FFF2E8';
+const TEXT = '#21170F';
+const MUTED = '#78695F';
+const NEON = '#FF6A21';
+const CYAN = '#F29132';
 
-const BLUE = '#2B82D9';
-const YELLOW = '#D99A00';
+const BLUE = '#FF9350';
+const YELLOW = '#F5A623';
 const PURPLE = '#8B5FC6';
 
 const ILLUSTRATIONS = {
@@ -82,7 +84,7 @@ const ProgressRing: React.FC<{
             cx={center}
             cy={center}
             r={radius}
-            stroke="rgba(109, 120, 111, 0.18)"
+            stroke="rgba(120, 105, 95, 0.18)"
             strokeWidth={strokeWidth}
             fill="transparent"
           />
@@ -117,7 +119,7 @@ const MacroDonut: React.FC<{
 
   const segments = [
     { value: protein, color: BLUE },
-    { value: carbs, color: '#63C934' },
+    { value: carbs, color: '#FF6A21' },
     { value: fats, color: YELLOW },
     { value: Math.max(0, 100 - protein - carbs - fats), color: PURPLE },
   ];
@@ -132,7 +134,7 @@ const MacroDonut: React.FC<{
             cx={center}
             cy={center}
             r={radius}
-            stroke="rgba(109, 120, 111, 0.16)"
+            stroke="rgba(120, 105, 95, 0.16)"
             strokeWidth={strokeWidth}
             fill="transparent"
           />
@@ -474,6 +476,8 @@ const resetGoalEditor = async () => {
     <View style={styles.screen}>
       <StatusBar barStyle="dark-content" backgroundColor={BG} />
 
+      <HeroFoodCornerAccent />
+
       <View pointerEvents="none" style={styles.greenGlow} />
       <View pointerEvents="none" style={styles.blueGlow} />
       <View pointerEvents="none" style={styles.bottomGlow} />
@@ -485,7 +489,7 @@ const resetGoalEditor = async () => {
       >
         <View style={styles.heroImageWrap}>
           <ImageBackground
-            source={ILLUSTRATIONS.hero}
+            source={require('../assets/calo_home_hero_food.jpg')}
             style={styles.heroImage}
             imageStyle={styles.heroImageStyle}
             resizeMode="cover"
@@ -607,7 +611,7 @@ const resetGoalEditor = async () => {
                     />
 
                     <MacroLegendRow
-                      color="#63C934"
+                      color="#FF6A21"
                       label={t('nutrition.carb', 'Carb')}
                       percent={macroStats.carbsPercent}
                       grams={plan.carbsG}
@@ -711,6 +715,8 @@ const resetGoalEditor = async () => {
             <Text style={styles.footerTag}>⚡ {t('nutrition.sustainable', 'Sustainable')}</Text>
           </View>
         </View>
+
+        <FoodAccentCard variant="guidance" height={170} />
       </ScrollView>
             <DailyGoalEditModal
         visible={showGoalEditor}
@@ -746,7 +752,7 @@ const styles = StyleSheet.create({
     width: 320,
     height: 320,
     borderRadius: 160,
-    backgroundColor: 'rgba(99, 201, 52, 0.10)',
+    backgroundColor: 'rgba(255, 106, 33, 0.10)',
   },
   blueGlow: {
     position: 'absolute',
@@ -755,7 +761,7 @@ const styles = StyleSheet.create({
     width: 260,
     height: 260,
     borderRadius: 130,
-    backgroundColor: 'rgba(43, 130, 217, 0.08)',
+    backgroundColor: 'rgba(255, 147, 80, 0.10)',
   },
   bottomGlow: {
     position: 'absolute',
@@ -763,27 +769,27 @@ const styles = StyleSheet.create({
     left: 0,
     right: 0,
     height: 180,
-    backgroundColor: 'rgba(99, 201, 52, 0.08)',
+    backgroundColor: 'rgba(255, 106, 33, 0.08)',
   },
 
 heroImageWrap: {
   marginHorizontal: 0,
-  height: 460,
+  height: 390,
   overflow: 'hidden',
-  backgroundColor: '#EEF4EA',
+  backgroundColor: '#FFF3E8',
 },
 heroImage: {
   flex: 1,
-  paddingHorizontal: 24,
-  paddingTop: 28,
-  paddingBottom: 95,
+  paddingHorizontal: 18,
+  paddingTop: 24,
+  paddingBottom: 54,
 },
   heroImageStyle: {
-    opacity: 0.48,
+    opacity: 1,
   },
   heroImageOverlay: {
     ...StyleSheet.absoluteFillObject,
-    backgroundColor: 'rgba(248, 251, 246, 0.60)',
+    backgroundColor: 'rgba(255, 248, 242, 0.26)',
   },
 stepBox: {
   width: 54,
@@ -800,12 +806,18 @@ stepBox: {
   elevation: 5,
 },
   stepText: {
-    color: '#10230F',
+    color: '#FFFFFF',
     fontSize: 27,
     fontWeight: '900',
   },
 heroTextBlock: {
   maxWidth: 335,
+  backgroundColor: 'rgba(255, 255, 255, 0.82)',
+  borderRadius: 22,
+  paddingHorizontal: 18,
+  paddingVertical: 16,
+  borderWidth: 1,
+  borderColor: 'rgba(255, 106, 33, 0.14)',
 },
 heroTitle: {
   color: TEXT,
@@ -831,16 +843,16 @@ heroSubtitle: {
 },
 phoneMock: {
   marginHorizontal: 8,
-  marginTop: -180,
+  marginTop: -72,
   borderRadius: 34,
   backgroundColor: 'rgba(255, 255, 255, 0.98)',
   borderWidth: 1,
-  borderColor: '#DDE8D9',
+  borderColor: '#F1D9C8',
   paddingHorizontal: 10,
   paddingTop: 18,
   paddingBottom: 12,
-  shadowColor: '#7D887F',
-  shadowOpacity: 0.38,
+  shadowColor: '#B66A39',
+  shadowOpacity: 0.18,
   shadowRadius: 24,
   shadowOffset: { width: 0, height: 14 },
   elevation: 10,
@@ -858,13 +870,13 @@ phoneMock: {
     justifyContent: 'center',
   },
   backIcon: {
-    color: '#566158',
+    color: '#6E5F55',
     fontSize: 38,
     lineHeight: 38,
     fontWeight: '300',
   },
   bellIcon: {
-    color: '#566158',
+    color: '#6E5F55',
     fontSize: 28,
     fontWeight: '300',
   },
@@ -882,7 +894,7 @@ phoneMock: {
     padding: 14,
     marginBottom: 12,
     borderWidth: 1,
-    borderColor: '#DDE8D9',
+    borderColor: '#F1D9C8',
   },
   sectionHeader: {
     flexDirection: 'row',
@@ -908,7 +920,7 @@ phoneMock: {
   goalCard: {
     flex: 1,
     marginHorizontal: 3,
-    backgroundColor: '#F3F7F0',
+    backgroundColor: '#FFF7EF',
     borderRadius: 18,
     padding: 14,
   },
@@ -929,7 +941,7 @@ phoneMock: {
     fontWeight: '900',
   },
   goalUnit: {
-    color: '#455047',
+    color: '#5F544D',
     fontSize: 14,
     fontWeight: '700',
     marginTop: 2,
@@ -937,7 +949,7 @@ phoneMock: {
 
   divider: {
     height: 1,
-    backgroundColor: '#E1E9DE',
+    backgroundColor: '#F2DED0',
     marginTop: 12,
     marginBottom: 14,
   },
@@ -974,7 +986,7 @@ phoneMock: {
     marginRight: 10,
   },
   legendLabel: {
-    color: '#455047',
+    color: '#5F544D',
     fontSize: 15,
     fontWeight: '700',
     width: 58,
@@ -1012,7 +1024,7 @@ phoneMock: {
     backgroundColor: 'rgba(255,255,255,0.04)',
   },
   mealName: {
-    color: '#455047',
+    color: '#5F544D',
     fontSize: 13,
     fontWeight: '800',
     textAlign: 'center',
@@ -1022,18 +1034,18 @@ phoneMock: {
   mealListRow: {
     flexDirection: 'row',
     alignItems: 'flex-start',
-    backgroundColor: '#F0F5ED',
+    backgroundColor: '#FFF2E8',
     borderRadius: 14,
     padding: 11,
     marginBottom: 9,
     borderWidth: 1,
-    borderColor: 'rgba(109, 120, 111, 0.12)',
+    borderColor: 'rgba(120, 105, 95, 0.12)',
   },
   mealIndex: {
     width: 26,
     height: 26,
     borderRadius: 13,
-    backgroundColor: 'rgba(99, 201, 52, 0.13)',
+    backgroundColor: 'rgba(255, 106, 33, 0.13)',
     alignItems: 'center',
     justifyContent: 'center',
     marginRight: 10,
@@ -1045,7 +1057,7 @@ phoneMock: {
   },
   mealListText: {
     flex: 1,
-    color: '#455047',
+    color: '#5F544D',
     fontSize: 14,
     lineHeight: 21,
   },
@@ -1060,7 +1072,7 @@ phoneMock: {
     borderRadius: 18,
     padding: 14,
     borderWidth: 1,
-    borderColor: '#DDE8D9',
+    borderColor: '#F1D9C8',
     marginTop: 10,
   },
   adviceIcon: {
@@ -1073,13 +1085,13 @@ phoneMock: {
     marginRight: 13,
   },
   adviceIconText: {
-    color: '#10230F',
+    color: '#FFFFFF',
     fontSize: 24,
     fontWeight: '900',
   },
   adviceText: {
     flex: 1,
-    color: '#2F3B32',
+    color: '#4E423A',
     fontSize: 15,
     lineHeight: 23,
     fontWeight: '600',
@@ -1131,7 +1143,7 @@ phoneMock: {
     paddingTop: 20,
     paddingBottom: 10,
     borderTopWidth: 1,
-    borderTopColor: 'rgba(109, 120, 111, 0.20)',
+    borderTopColor: 'rgba(120, 105, 95, 0.20)',
   },
   footerTitle: {
     color: TEXT,
@@ -1154,13 +1166,13 @@ phoneMock: {
     flexWrap: 'wrap',
   },
   footerTag: {
-    color: '#455047',
+    color: '#5F544D',
     fontSize: 14,
     fontWeight: '800',
     marginHorizontal: 7,
   },
   footerDivider: {
-    color: 'rgba(109, 120, 111, 0.60)',
+    color: 'rgba(120, 105, 95, 0.60)',
     fontSize: 14,
     fontWeight: '700',
   },
@@ -1170,7 +1182,7 @@ phoneMock: {
     borderRadius: 18,
     padding: 18,
     borderWidth: 1,
-    borderColor: 'rgba(99, 201, 52, 0.24)',
+    borderColor: 'rgba(255, 106, 33, 0.24)',
   },
   emptyEmoji: {
     fontSize: 34,
@@ -1203,8 +1215,8 @@ modalCard: {
   borderRadius: 24,
   padding: 18,
   borderWidth: 1,
-  borderColor: 'rgba(99, 201, 52, 0.27)',
-  shadowColor: '#18A39B',
+  borderColor: 'rgba(255, 106, 33, 0.27)',
+  shadowColor: '#F29132',
   shadowOpacity: 0.14,
   shadowRadius: 18,
   shadowOffset: {
@@ -1233,16 +1245,16 @@ modalDesc: {
   marginBottom: 16,
 },
 inputLabel: {
-  color: '#455047',
+  color: '#5F544D',
   fontSize: 13,
   fontWeight: '900',
   marginBottom: 8,
 },
 input: {
-  backgroundColor: '#F0F5ED',
+  backgroundColor: '#FFF2E8',
   borderRadius: 16,
   borderWidth: 1,
-  borderColor: 'rgba(109, 120, 111, 0.22)',
+  borderColor: 'rgba(120, 105, 95, 0.22)',
   color: TEXT,
   fontSize: 18,
   fontWeight: '900',
@@ -1264,12 +1276,12 @@ modalBtn: {
   marginHorizontal: 4,
 },
 modalBtnGhost: {
-  backgroundColor: 'rgba(24, 163, 155, 0.08)',
-  borderColor: 'rgba(24, 163, 155, 0.30)',
+  backgroundColor: 'rgba(242, 145, 50, 0.08)',
+  borderColor: 'rgba(242, 145, 50, 0.30)',
 },
 modalBtnCancel: {
-  backgroundColor: '#F0F5ED',
-  borderColor: 'rgba(109, 120, 111, 0.24)',
+  backgroundColor: '#FFF2E8',
+  borderColor: 'rgba(120, 105, 95, 0.24)',
 },
 modalBtnSave: {
   backgroundColor: NEON,
@@ -1280,11 +1292,11 @@ modalBtnGhostText: {
   fontWeight: '900',
 },
 modalBtnCancelText: {
-  color: '#455047',
+  color: '#5F544D',
   fontWeight: '900',
 },
 modalBtnSaveText: {
-  color: '#10230F',
+  color: '#FFFFFF',
   fontWeight: '900',
 },
 });

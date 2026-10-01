@@ -27,11 +27,11 @@ import {
   calculateNutritionScore,
 } from '../nutrition/caloLensInsights';
 
-const TEXT = '#17211A';
-const MUTED = '#6D786F';
-const NEON = '#63C934';
-const CYAN = '#18A39B';
-const YELLOW = '#D99A00';
+const TEXT = '#21170F';
+const MUTED = '#78695F';
+const NEON = '#FF5A1F';
+const CYAN = '#F47B35';
+const YELLOW = '#F4A51C';
 
 export const NutritionScoreCard:
 React.FC<{
@@ -169,10 +169,10 @@ const styles =
       borderRadius: 21,
       borderWidth: 1,
       borderColor:
-        'rgba(99, 201, 52, 0.24)',
+        'rgba(255, 90, 31, 0.24)',
       padding: 14,
       marginBottom: 13,
-      shadowColor: '#879487',
+      shadowColor: '#B89079',
       shadowOpacity: 0.07,
       shadowRadius: 10,
       shadowOffset: {

@@ -47,10 +47,10 @@ const en = {
       'Calories and nutrients are estimates. Results vary by ingredients, cooking method and actual portion size.',
     cameraPermissionTitle: 'Camera permission',
     cameraPermissionBody:
-      'GymNova needs camera access to scan your meal.',
+      'CaloLens needs camera access to scan your meal.',
     permissionBlockedTitle: 'Camera permission blocked',
     permissionBlockedBody:
-      'Open Settings and allow Camera access for GymNova.',
+      'Open Settings and allow Camera access for CaloLens.',
     photoError: 'Unable to open the camera or photo library.',
     endpointTitle: 'AI backend is not configured',
     endpointBody:
@@ -132,10 +132,10 @@ const vi = {
       'Calo và dinh dưỡng chỉ là ước tính, có thể thay đổi theo nguyên liệu, cách chế biến và khẩu phần thực tế.',
     cameraPermissionTitle: 'Quyền Camera',
     cameraPermissionBody:
-      'GymNova cần quyền Camera để quét phần ăn.',
+      'CaloLens cần quyền Camera để quét phần ăn.',
     permissionBlockedTitle: 'Quyền Camera đang bị chặn',
     permissionBlockedBody:
-      'Mở Cài đặt và cấp quyền Camera cho GymNova.',
+      'Mở Cài đặt và cấp quyền Camera cho CaloLens.',
     photoError: 'Không thể mở Camera hoặc thư viện ảnh.',
     endpointTitle: 'Chưa cấu hình backend AI',
     endpointBody:

@@ -1,4 +1,6 @@
 // FILE: src/screens/FoodSearchScreen.tsx
+import FoodAccentCard from '../components/FoodAccentCard';
+import HeroFoodCornerAccent from '../components/HeroFoodCornerAccent';
 import React, {useCallback, useMemo, useState} from 'react';
 import {
   ScrollView,
@@ -15,13 +17,13 @@ import {useTranslation} from 'react-i18next';
 import type {FoodCategory, FoodDefinition} from '../data/foodCatalog';
 import {loadRecentFoods, searchFoodLibrary} from '../nutrition/foodLibrary';
 
-const BG = '#F5F8F2';
+const BG = '#FFF8F2';
 const CARD = '#FFFFFF';
-const TEXT = '#17211A';
-const MUTED = '#6D786F';
-const NEON = '#63C934';
-const CYAN = '#18A39B';
-const BORDER = '#DDE8D9';
+const TEXT = '#21170F';
+const MUTED = '#78695F';
+const NEON = '#FF6A21';
+const CYAN = '#F29132';
+const BORDER = '#F1D9C8';
 
 type SourceFilter = 'all' | 'recent' | 'custom' | 'recipe';
 
@@ -91,6 +93,8 @@ export const FoodSearchScreen: React.FC = () => {
   return (
     <View style={styles.screen}>
       <StatusBar barStyle="dark-content" backgroundColor={BG} />
+
+      <HeroFoodCornerAccent />
       <ScrollView
         keyboardShouldPersistTaps="handled"
         showsVerticalScrollIndicator={false}
@@ -193,6 +197,8 @@ export const FoodSearchScreen: React.FC = () => {
             <Text style={styles.emptyText}>{t('foodTools.noFoodBody', 'Try another keyword or create this food yourself.')}</Text>
           </View>
         )}
+
+        <FoodAccentCard variant="guidance" height={145} compact />
       </ScrollView>
     </View>
   );
@@ -205,7 +211,7 @@ const styles = StyleSheet.create({
   kicker: {color: CYAN, fontSize: 10, fontWeight: '900', letterSpacing: 1},
   title: {color: TEXT, fontSize: 32, lineHeight: 38, fontWeight: '900', marginTop: 5},
   subtitle: {color: MUTED, fontSize: 13, lineHeight: 20, marginTop: 7},
-  searchBox: {minHeight: 52, flexDirection: 'row', alignItems: 'center', backgroundColor: CARD, borderRadius: 17, borderWidth: 1, borderColor: 'rgba(24,163,155,0.25)', paddingHorizontal: 13, marginBottom: 11},
+  searchBox: {minHeight: 52, flexDirection: 'row', alignItems: 'center', backgroundColor: CARD, borderRadius: 17, borderWidth: 1, borderColor: 'rgba(242,145,50,0.25)', paddingHorizontal: 13, marginBottom: 11},
   searchIcon: {color: CYAN, fontSize: 22, marginRight: 8},
   searchInput: {flex: 1, color: TEXT, fontSize: 14, fontWeight: '700', paddingVertical: 0},
   clear: {color: MUTED, fontSize: 24, lineHeight: 25, marginLeft: 8},
@@ -213,29 +219,29 @@ const styles = StyleSheet.create({
   sourceChip: {borderRadius: 999, borderWidth: 1, borderColor: BORDER, backgroundColor: CARD, paddingHorizontal: 12, paddingVertical: 8, marginRight: 7},
   sourceChipActive: {backgroundColor: NEON, borderColor: NEON},
   sourceText: {color: MUTED, fontSize: 10, fontWeight: '900'},
-  sourceTextActive: {color: '#10230F'},
+  sourceTextActive: {color: '#FFFFFF'},
   categoryRow: {paddingBottom: 11},
-  categoryChip: {borderRadius: 999, backgroundColor: '#F0F5ED', paddingHorizontal: 11, paddingVertical: 7, marginRight: 7},
-  categoryChipActive: {backgroundColor: 'rgba(24,163,155,0.13)', borderWidth: 1, borderColor: 'rgba(24,163,155,0.28)'},
+  categoryChip: {borderRadius: 999, backgroundColor: '#FFF2E8', paddingHorizontal: 11, paddingVertical: 7, marginRight: 7},
+  categoryChipActive: {backgroundColor: 'rgba(242,145,50,0.13)', borderWidth: 1, borderColor: 'rgba(242,145,50,0.28)'},
   categoryText: {color: MUTED, fontSize: 9, fontWeight: '800'},
   categoryTextActive: {color: CYAN, fontWeight: '900'},
   createRow: {flexDirection: 'row', marginHorizontal: -4, marginBottom: 15},
-  createButton: {flex: 1.4, minHeight: 43, alignItems: 'center', justifyContent: 'center', borderRadius: 999, backgroundColor: 'rgba(99,201,52,0.11)', borderWidth: 1, borderColor: 'rgba(99,201,52,0.28)', marginHorizontal: 4},
-  createText: {color: '#4F9E2A', fontSize: 10, fontWeight: '900'},
-  recipeButton: {flex: 1, minHeight: 43, alignItems: 'center', justifyContent: 'center', borderRadius: 999, backgroundColor: 'rgba(24,163,155,0.09)', borderWidth: 1, borderColor: 'rgba(24,163,155,0.25)', marginHorizontal: 4},
+  createButton: {flex: 1.4, minHeight: 43, alignItems: 'center', justifyContent: 'center', borderRadius: 999, backgroundColor: 'rgba(255,106,33,0.11)', borderWidth: 1, borderColor: 'rgba(255,106,33,0.28)', marginHorizontal: 4},
+  createText: {color: '#E85A18', fontSize: 10, fontWeight: '900'},
+  recipeButton: {flex: 1, minHeight: 43, alignItems: 'center', justifyContent: 'center', borderRadius: 999, backgroundColor: 'rgba(242,145,50,0.09)', borderWidth: 1, borderColor: 'rgba(242,145,50,0.25)', marginHorizontal: 4},
   recipeText: {color: CYAN, fontSize: 10, fontWeight: '900'},
   resultHeader: {flexDirection: 'row', justifyContent: 'space-between', paddingHorizontal: 5, marginBottom: 8},
   resultTitle: {color: TEXT, fontSize: 18, fontWeight: '900'},
   resultCount: {color: MUTED, fontSize: 11, fontWeight: '900'},
   foodRow: {minHeight: 82, flexDirection: 'row', alignItems: 'center', backgroundColor: CARD, borderRadius: 19, borderWidth: 1, borderColor: BORDER, padding: 12, marginBottom: 8},
-  foodIcon: {width: 46, height: 46, borderRadius: 15, alignItems: 'center', justifyContent: 'center', backgroundColor: 'rgba(99,201,52,0.09)', marginRight: 10},
+  foodIcon: {width: 46, height: 46, borderRadius: 15, alignItems: 'center', justifyContent: 'center', backgroundColor: 'rgba(255,106,33,0.09)', marginRight: 10},
   foodIconText: {fontSize: 20},
   foodBody: {flex: 1},
   foodName: {color: TEXT, fontSize: 13, fontWeight: '900'},
   foodMeta: {color: CYAN, fontSize: 9, fontWeight: '900', marginTop: 4},
   foodPortion: {color: MUTED, fontSize: 9, marginTop: 3},
   arrow: {color: NEON, fontSize: 28, marginLeft: 8},
-  emptyCard: {backgroundColor: CARD, borderRadius: 20, borderWidth: 1, borderColor: 'rgba(99,201,52,0.22)', padding: 22, alignItems: 'center'},
+  emptyCard: {backgroundColor: CARD, borderRadius: 20, borderWidth: 1, borderColor: 'rgba(255,106,33,0.22)', padding: 22, alignItems: 'center'},
   emptyIcon: {color: CYAN, fontSize: 36},
   emptyTitle: {color: TEXT, fontSize: 17, fontWeight: '900', marginTop: 8},
   emptyText: {color: MUTED, fontSize: 11, lineHeight: 17, textAlign: 'center', marginTop: 5},

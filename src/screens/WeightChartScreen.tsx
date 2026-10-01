@@ -7,6 +7,7 @@ import {
   Dimensions,
   ScrollView,
   StatusBar,
+  ImageBackground,
 } from 'react-native';
 import { LineChart } from 'react-native-chart-kit';
 import { loadHistory } from '../weight/weightStore';
@@ -14,13 +15,13 @@ import { useTranslation } from 'react-i18next';
 
 import '../i18n/weightTranslations';
 
-const BG = '#F5F8F2';
+const BG = '#FFF8F2';
 const CARD = '#FFFFFF';
-const CARD_2 = '#F0F5ED';
-const TEXT = '#17211A';
-const MUTED = '#6D786F';
-const NEON = '#63C934';
-const CYAN = '#18A39B';
+const CARD_2 = '#FFF0E4';
+const TEXT = '#21170F';
+const MUTED = '#78695F';
+const NEON = '#FF5A1F';
+const CYAN = '#F47B35';
 
 export const WeightChartScreen: React.FC = () => {
   const { t } = useTranslation();
@@ -188,9 +189,9 @@ export const WeightChartScreen: React.FC = () => {
                 chartConfig={{
                   backgroundColor: BG,
                   backgroundGradientFrom: '#FFFFFF',
-                  backgroundGradientTo: '#F0F5ED',
+                  backgroundGradientTo: '#FFF0E4',
                   decimalPlaces: 1,
-                  color: (opacity = 1) => `rgba(99, 201, 52, ${opacity})`,
+                  color: (opacity = 1) => `rgba(255, 90, 31, ${opacity})`,
                   labelColor: (opacity = 1) => `rgba(82, 96, 87, ${opacity})`,
                   propsForDots: {
                     r: '4',
@@ -199,7 +200,7 @@ export const WeightChartScreen: React.FC = () => {
                     fill: BG,
                   },
                   propsForBackgroundLines: {
-                    stroke: 'rgba(109, 120, 111, 0.17)',
+                    stroke: 'rgba(120, 105, 95, 0.17)',
                     strokeDasharray: '4 6',
                   },
                 }}
@@ -236,6 +237,28 @@ export const WeightChartScreen: React.FC = () => {
             </View>
           </>
         )}
+
+        <ImageBackground
+          source={require('../assets/calo_guidance_food.jpg')}
+          style={st.footerVisual}
+          imageStyle={st.footerVisualImage}
+        >
+          <View style={st.footerVisualTint} />
+          <View style={st.footerVisualCard}>
+            <Text style={st.footerVisualKicker}>
+              {t('weight.footerKicker', 'NUTRITION & PROGRESS')}
+            </Text>
+            <Text style={st.footerVisualTitle}>
+              {t('weight.footerTitle', 'Track your meals and body progress together')}
+            </Text>
+            <Text style={st.footerVisualText}>
+              {t(
+                'weight.footerBody',
+                'A simple daily routine of logging meals and checking your progress helps you stay consistent.',
+              )}
+            </Text>
+          </View>
+        </ImageBackground>
       </ScrollView>
     </View>
   );
@@ -262,7 +285,7 @@ const st = StyleSheet.create({
     width: 260,
     height: 260,
     borderRadius: 130,
-    backgroundColor: 'rgba(24, 163, 155, 0.10)',
+    backgroundColor: 'rgba(244, 123, 53, 0.10)',
   },
   glowBottom: {
     position: 'absolute',
@@ -271,7 +294,7 @@ const st = StyleSheet.create({
     width: 250,
     height: 250,
     borderRadius: 125,
-    backgroundColor: 'rgba(99, 201, 52, 0.10)',
+    backgroundColor: 'rgba(255, 90, 31, 0.10)',
   },
 
   hero: {
@@ -283,8 +306,8 @@ const st = StyleSheet.create({
     paddingVertical: 6,
     borderRadius: 999,
     borderWidth: 1,
-    borderColor: 'rgba(24, 163, 155, 0.45)',
-    backgroundColor: 'rgba(24, 163, 155, 0.10)',
+    borderColor: 'rgba(244, 123, 53, 0.45)',
+    backgroundColor: 'rgba(244, 123, 53, 0.10)',
     marginBottom: 14,
   },
   kickerText: {
@@ -300,7 +323,7 @@ const st = StyleSheet.create({
     fontWeight: '900',
   },
   subtitle: {
-    color: '#455047',
+    color: '#5F544D',
     fontSize: 15,
     lineHeight: 22,
     marginTop: 10,
@@ -318,7 +341,7 @@ const st = StyleSheet.create({
     borderRadius: 22,
     padding: 15,
     borderWidth: 1,
-    borderColor: 'rgba(99, 201, 52, 0.24)',
+    borderColor: 'rgba(255, 90, 31, 0.24)',
   },
   statIcon: {
     fontSize: 22,
@@ -352,9 +375,9 @@ const st = StyleSheet.create({
     borderRadius: 24,
     padding: 14,
     borderWidth: 1,
-    borderColor: 'rgba(99, 201, 52, 0.24)',
+    borderColor: 'rgba(255, 90, 31, 0.24)',
     overflow: 'hidden',
-    shadowColor: '#18A39B',
+    shadowColor: '#F47B35',
     shadowOpacity: 0.08,
     shadowRadius: 16,
     shadowOffset: { width: 0, height: 8 },
@@ -378,9 +401,9 @@ const st = StyleSheet.create({
     fontWeight: '700',
   },
   liveBadge: {
-    backgroundColor: 'rgba(99, 201, 52, 0.12)',
+    backgroundColor: 'rgba(255, 90, 31, 0.12)',
     borderWidth: 1,
-    borderColor: 'rgba(99, 201, 52, 0.42)',
+    borderColor: 'rgba(255, 90, 31, 0.42)',
     borderRadius: 999,
     paddingHorizontal: 10,
     paddingVertical: 5,
@@ -401,7 +424,7 @@ const st = StyleSheet.create({
     padding: 16,
     marginTop: 14,
     borderWidth: 1,
-    borderColor: 'rgba(109, 120, 111, 0.18)',
+    borderColor: 'rgba(120, 105, 95, 0.18)',
   },
   summaryTitle: {
     color: TEXT,
@@ -414,7 +437,7 @@ const st = StyleSheet.create({
     backgroundColor: CARD_2,
     borderRadius: 18,
     borderWidth: 1,
-    borderColor: 'rgba(109, 120, 111, 0.14)',
+    borderColor: 'rgba(120, 105, 95, 0.14)',
     padding: 13,
   },
   summaryItem: {
@@ -433,7 +456,7 @@ const st = StyleSheet.create({
   },
   divider: {
     width: 1,
-    backgroundColor: 'rgba(109, 120, 111, 0.20)',
+    backgroundColor: 'rgba(120, 105, 95, 0.20)',
     marginHorizontal: 14,
   },
 
@@ -442,16 +465,16 @@ const st = StyleSheet.create({
     borderRadius: 24,
     padding: 20,
     borderWidth: 1,
-    borderColor: 'rgba(99, 201, 52, 0.24)',
+    borderColor: 'rgba(255, 90, 31, 0.24)',
     alignItems: 'center',
   },
   emptyIcon: {
     width: 64,
     height: 64,
     borderRadius: 32,
-    backgroundColor: 'rgba(99, 201, 52, 0.12)',
+    backgroundColor: 'rgba(255, 90, 31, 0.12)',
     borderWidth: 1,
-    borderColor: 'rgba(99, 201, 52, 0.42)',
+    borderColor: 'rgba(255, 90, 31, 0.42)',
     alignItems: 'center',
     justifyContent: 'center',
     marginBottom: 14,
@@ -469,6 +492,47 @@ const st = StyleSheet.create({
     color: MUTED,
     textAlign: 'center',
     lineHeight: 21,
+    marginTop: 8,
+  },
+  footerVisual: {
+    minHeight: 190,
+    borderRadius: 24,
+    overflow: 'hidden',
+    marginTop: 16,
+    borderWidth: 1,
+    borderColor: 'rgba(255, 106, 33, 0.16)',
+    justifyContent: 'flex-end',
+  },
+  footerVisualImage: {
+    resizeMode: 'cover',
+  },
+  footerVisualTint: {
+    ...StyleSheet.absoluteFillObject,
+    backgroundColor: 'rgba(255, 248, 242, 0.22)',
+  },
+  footerVisualCard: {
+    margin: 14,
+    borderRadius: 18,
+    backgroundColor: 'rgba(255, 255, 255, 0.76)',
+    paddingHorizontal: 18,
+    paddingVertical: 18,
+  },
+  footerVisualKicker: {
+    color: CYAN,
+    fontWeight: '900',
+    fontSize: 10,
+    letterSpacing: 1,
+  },
+  footerVisualTitle: {
+    color: TEXT,
+    fontWeight: '900',
+    fontSize: 20,
+    marginTop: 6,
+  },
+  footerVisualText: {
+    color: MUTED,
+    fontSize: 12,
+    lineHeight: 18,
     marginTop: 8,
   },
 });

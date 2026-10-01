@@ -1,12 +1,18 @@
 // FILE: src/screens/MealScannerScreen.tsx
 import React, {
   useCallback,
+  useEffect,
+  useMemo,
+  useRef,
   useState,
 } from 'react';
 import {
   ActivityIndicator,
   Alert,
+  Animated,
+  Easing,
   Image,
+  ImageBackground,
   Linking,
   PermissionsAndroid,
   Platform,
@@ -25,7 +31,6 @@ import {
 } from 'react-native-image-picker';
 import {
   CommonActions,
-  useFocusEffect,
   useNavigation,
 } from '@react-navigation/native';
 import {
@@ -36,17 +41,12 @@ import i18n from '../i18n';
 import '../i18n/mealScanAccessTranslations';
 import '../i18n/caloLensFoodToolsTranslations';
 import '../i18n/mealScanAiErrorTranslations';
+import '../i18n/mealScannerPremiumTranslations';
 
 import {
   analyzeMealPhoto,
   MealAiNotConfiguredError,
 } from '../nutrition/mealAi';
-import {
-  consumeTodayMealScan,
-  FREE_DAILY_AI_SCAN_LIMIT,
-  loadTodayMealScanQuota,
-  PREMIUM_DAILY_AI_SCAN_LIMIT,
-} from '../nutrition/mealScanQuota';
 import {
   showRewarded,
 } from '../ads/rewarded';
@@ -54,14 +54,13 @@ import {
   useSubscription,
 } from '../iap/SubscriptionProvider';
 
-const BG = '#F5F8F2';
+const BG = '#FFF8F2';
 const CARD = '#FFFFFF';
-const TEXT = '#17211A';
-const MUTED = '#6D786F';
-const GREEN = '#63C934';
+const TEXT = '#21170F';
+const MUTED = '#78695F';
+const GREEN = '#FF5A1F';
 const NEON = GREEN;
-const CYAN = '#18A39B';
-
+const CYAN = '#F47B35';
 
 type ParsedMealAiError = {
   code: string;
@@ -149,11 +148,10 @@ const parseJsonErrorBody = (
           parsed,
         )
       ) {
-        return parsed as
-          Record<
-            string,
-            unknown
-          >;
+        return parsed as Record<
+          string,
+          unknown
+        >;
       }
     } catch {
       // Continue.
@@ -196,11 +194,10 @@ const parseMealAiError = (
         responseData,
       )
     )
-      ? responseData as
-          Record<
-            string,
-            unknown
-          >
+      ? (responseData as Record<
+          string,
+          unknown
+        >)
       : parseJsonErrorBody(
           rawMessage,
         );
@@ -208,14 +205,14 @@ const parseMealAiError = (
   const code =
     String(
       body?.error ||
-      '',
+        '',
     ).trim();
 
   const bodyMessage =
     String(
       body?.message ||
-      body?.details ||
-      '',
+        body?.details ||
+        '',
     ).trim();
 
   const message =
@@ -223,8 +220,7 @@ const parseMealAiError = (
     rawMessage;
 
   const normalized =
-    `${code} ${message}`
-      .toLowerCase();
+    `${code} ${message}`.toLowerCase();
 
   const retryable =
     body?.retryable ===
@@ -292,20 +288,6 @@ React.FC = () => {
   } = useSubscription();
 
   const [
-    remainingScans,
-    setRemainingScans,
-  ] = useState(
-    isPremium
-      ? PREMIUM_DAILY_AI_SCAN_LIMIT
-      : FREE_DAILY_AI_SCAN_LIMIT,
-  );
-
-  const [
-    quotaLoaded,
-    setQuotaLoaded,
-  ] = useState(false);
-
-  const [
     imageUri,
     setImageUri,
   ] = useState<string | null>(
@@ -317,30 +299,161 @@ React.FC = () => {
     setAnalyzing,
   ] = useState(false);
 
-  const reloadQuota =
-    useCallback(
-      async () => {
-        setQuotaLoaded(false);
+  const [
+    scanStageIndex,
+    setScanStageIndex,
+  ] = useState(0);
 
-        const quota =
-          await loadTodayMealScanQuota(
-            isPremium,
-          );
+  const scanLineAnim =
+    useRef(
+      new Animated.Value(0),
+    ).current;
 
-        setRemainingScans(
-          quota.remaining,
-        );
+  const scanPulseAnim =
+    useRef(
+      new Animated.Value(0),
+    ).current;
 
-        setQuotaLoaded(true);
-      },
-      [isPremium],
+  const scannerOrbitAnim =
+    useRef(
+      new Animated.Value(0),
+    ).current;
+
+  const scanStages =
+    useMemo(
+      () => [
+        t(
+          'mealScan.scanStageDetecting',
+          'Detecting foods',
+        ),
+        t(
+          'mealScan.scanStageEstimating',
+          'Estimating portions',
+        ),
+        t(
+          'mealScan.scanStageCalculating',
+          'Calories & nutrition',
+        ),
+      ],
+      [t],
     );
 
-  useFocusEffect(
-    useCallback(() => {
-      reloadQuota();
-    }, [reloadQuota]),
-  );
+  useEffect(() => {
+    if (
+      !analyzing ||
+      !imageUri
+    ) {
+      scanLineAnim.stopAnimation();
+      scanPulseAnim.stopAnimation();
+      scannerOrbitAnim.stopAnimation();
+      scanLineAnim.setValue(0);
+      scanPulseAnim.setValue(0);
+      scannerOrbitAnim.setValue(0);
+      setScanStageIndex(0);
+      return;
+    }
+
+    const lineLoop =
+      Animated.loop(
+        Animated.sequence([
+          Animated.timing(
+            scanLineAnim,
+            {
+              toValue: 1,
+              duration: 1700,
+              easing: Easing.inOut(
+                Easing.ease,
+              ),
+              useNativeDriver: true,
+            },
+          ),
+          Animated.timing(
+            scanLineAnim,
+            {
+              toValue: 0,
+              duration: 0,
+              useNativeDriver: true,
+            },
+          ),
+        ]),
+      );
+
+    const pulseLoop =
+      Animated.loop(
+        Animated.sequence([
+          Animated.timing(
+            scanPulseAnim,
+            {
+              toValue: 1,
+              duration: 900,
+              easing: Easing.inOut(
+                Easing.ease,
+              ),
+              useNativeDriver: true,
+            },
+          ),
+          Animated.timing(
+            scanPulseAnim,
+            {
+              toValue: 0,
+              duration: 900,
+              easing: Easing.inOut(
+                Easing.ease,
+              ),
+              useNativeDriver: true,
+            },
+          ),
+        ]),
+      );
+
+    const orbitLoop =
+      Animated.loop(
+        Animated.timing(
+          scannerOrbitAnim,
+          {
+            toValue: 1,
+            duration: 4200,
+            easing: Easing.linear,
+            useNativeDriver: true,
+          },
+        ),
+      );
+
+    lineLoop.start();
+    pulseLoop.start();
+    orbitLoop.start();
+
+    const intervalId =
+      setInterval(
+        () => {
+          setScanStageIndex(
+            prev =>
+              (prev + 1) %
+              scanStages.length,
+          );
+        },
+        1400,
+      );
+
+    return () => {
+      clearInterval(
+        intervalId,
+      );
+      lineLoop.stop();
+      pulseLoop.stop();
+      orbitLoop.stop();
+      scanLineAnim.stopAnimation();
+      scanPulseAnim.stopAnimation();
+      scannerOrbitAnim.stopAnimation();
+    };
+  }, [
+    analyzing,
+    imageUri,
+    scanLineAnim,
+    scanPulseAnim,
+    scannerOrbitAnim,
+    scanStages.length,
+  ]);
 
   const openPremiumScreen =
     useCallback(() => {
@@ -375,54 +488,6 @@ React.FC = () => {
         }),
       );
     }, [navigation]);
-
-  const showFreeLimitPopup =
-    useCallback(() => {
-      Alert.alert(
-        t(
-          'mealScan.quotaReachedTitle',
-          'Daily scan limit reached',
-        ),
-        t(
-          'mealScan.quotaReachedBody',
-          'Free users can analyze up to 3 meal photos per day. Try again tomorrow or upgrade to Premium.',
-        ),
-        [
-          {
-            text: t(
-              'common.cancel',
-              'Cancel',
-            ),
-            style: 'cancel',
-          },
-          {
-            text: t(
-              'mealScan.upgradePremium',
-              'Upgrade Premium',
-            ),
-            onPress:
-              openPremiumScreen,
-          },
-        ],
-      );
-    }, [
-      openPremiumScreen,
-      t,
-    ]);
-
-  const showPremiumLimitPopup =
-    useCallback(() => {
-      Alert.alert(
-        t(
-          'mealScan.premiumQuotaReachedTitle',
-          'Premium daily limit reached',
-        ),
-        t(
-          'mealScan.premiumQuotaReachedBody',
-          'Premium accounts can analyze up to 15 meal photos per day. Please try again tomorrow.',
-        ),
-      );
-    }, [t]);
 
   const requestCameraPermission =
     async () => {
@@ -547,10 +612,10 @@ React.FC = () => {
             'Error',
           ),
           result.errorMessage ||
-          t(
-            'mealScan.photoError',
-            'Unable to open the camera.',
-          ),
+            t(
+              'mealScan.photoError',
+              'Unable to open the camera.',
+            ),
         );
         return;
       }
@@ -589,10 +654,10 @@ React.FC = () => {
             'Error',
           ),
           result.errorMessage ||
-          t(
-            'mealScan.photoError',
-            'Unable to open the photo library.',
-          ),
+            t(
+              'mealScan.photoError',
+              'Unable to open the photo library.',
+            ),
         );
         return;
       }
@@ -606,36 +671,51 @@ React.FC = () => {
       }
     };
 
+  const scanLineTranslateY =
+    scanLineAnim.interpolate({
+      inputRange: [0, 1],
+      outputRange: [24, 295],
+    });
+
+  const scanPulseScale =
+    scanPulseAnim.interpolate({
+      inputRange: [0, 1],
+      outputRange: [0.985, 1.02],
+    });
+
+  const scanPulseOpacity =
+    scanPulseAnim.interpolate({
+      inputRange: [0, 1],
+      outputRange: [0.18, 0.35],
+    });
+
+  const scannerOrbitRotate =
+    scannerOrbitAnim.interpolate({
+      inputRange: [0, 1],
+      outputRange: ['0deg', '360deg'],
+    });
+
+  const scannerGlowOpacity =
+    scanPulseAnim.interpolate({
+      inputRange: [0, 1],
+      outputRange: [0.28, 0.72],
+    });
+
+  const scannerFocusScale =
+    scanPulseAnim.interpolate({
+      inputRange: [0, 1],
+      outputRange: [0.92, 1.08],
+    });
+
+  const scanProgressWidth =
+    `${Math.min(96, 32 + scanStageIndex * 32)}%` as const;
+
   const analyze =
     async () => {
       if (
         !imageUri ||
-        analyzing ||
-        !quotaLoaded
+        analyzing
       ) {
-        return;
-      }
-
-      /**
-       * Free:
-       * 1. Tối đa 3 lượt/ngày.
-       * 2. Còn lượt mới hiện rewarded.
-       * 3. Xem đủ rewarded mới trừ lượt và gửi ảnh.
-       * 4. Hết lượt sẽ mở popup dẫn sang Premium.
-       *
-       * Premium:
-       * 1. Không quảng cáo.
-       * 2. Tối đa 15 lượt/ngày.
-       */
-      if (
-        remainingScans <= 0
-      ) {
-        if (isPremium) {
-          showPremiumLimitPopup();
-        } else {
-          showFreeLimitPopup();
-        }
-
         return;
       }
 
@@ -681,11 +761,6 @@ React.FC = () => {
           }
         }
 
-        /**
-         * Chỉ trừ lượt sau khi AI phân tích thành công.
-         * Nếu backend quá tải hoặc mất mạng, lượt quét
-         * vẫn được giữ nguyên.
-         */
         const foods =
           await analyzeMealPhoto({
             uri: imageUri,
@@ -694,25 +769,6 @@ React.FC = () => {
               i18n.language ||
               'en',
           });
-
-        const consumed =
-          await consumeTodayMealScan(
-            isPremium,
-          );
-
-        setRemainingScans(
-          consumed.quota.remaining,
-        );
-
-        if (!consumed.allowed) {
-          if (isPremium) {
-            showPremiumLimitPopup();
-          } else {
-            showFreeLimitPopup();
-          }
-
-          return;
-        }
 
         navigation.navigate(
           'MealReview',
@@ -767,7 +823,7 @@ React.FC = () => {
             ),
             t(
               'mealScan.aiBusyBody',
-              'The AI service is temporarily busy. Please wait a moment and try again. Your scan has not been used.',
+              'The AI service is temporarily busy. Please wait a moment and try again.',
             ),
           );
 
@@ -785,7 +841,7 @@ React.FC = () => {
             ? parsedError.message
             : t(
                 'mealScan.analysisFailedBody',
-                'Unable to analyze this meal. Please check your connection and try again. Your scan has not been used.',
+                'Unable to analyze this meal. Please check your connection and try again.',
               ),
         );
       } finally {
@@ -838,9 +894,7 @@ React.FC = () => {
         >
           <View style={styles.quotaHeader}>
             <Text style={styles.quotaIcon}>
-              {isPremium
-                ? '★'
-                : '⚡'}
+              {isPremium ? '★' : '⚡'}
             </Text>
 
             <View style={styles.quotaBody}>
@@ -856,101 +910,349 @@ React.FC = () => {
                     )}
               </Text>
 
-              <Text style={styles.quotaValue}>
+              <Text style={styles.quotaNotice}>
                 {isPremium
                   ? t(
-                      'mealScan.premiumQuotaRemaining',
-                      {
-                        count:
-                          remainingScans,
-                        defaultValue:
-                          '{{count}} of 15 scans remaining today',
-                      },
+                      'mealScan.premiumNoAdsNotice',
+                      'Unlimited AI scans with no rewarded ads.',
                     )
                   : t(
-                      'mealScan.freeQuotaRemaining',
-                      {
-                        count:
-                          remainingScans,
-                        defaultValue:
-                          '{{count}} of 3 scans remaining today',
-                      },
+                      'mealScan.rewardedNotice',
+                      'Unlimited AI scans. Watch a rewarded ad before each AI analysis.',
                     )}
               </Text>
 
               {!isPremium ? (
-                <Text style={styles.quotaNotice}>
-                  {t(
-                    'mealScan.rewardedNotice',
-                    'Watch a rewarded ad before each AI analysis.',
-                  )}
-                </Text>
-              ) : (
-                <Text style={styles.quotaNotice}>
-                  {t(
-                    'mealScan.premiumNoAdsNotice',
-                    'Premium scans do not require ads.',
-                  )}
-                </Text>
-              )}
+                <TouchableOpacity
+                  activeOpacity={0.82}
+                  onPress={openPremiumScreen}
+                  style={styles.premiumCta}
+                >
+                  <Text style={styles.premiumCtaText}>
+                    {t(
+                      'mealScan.upgradePremium',
+                      'Upgrade Premium',
+                    )}
+                    {'  ·  '}
+                    {t(
+                      'premium.removeAds',
+                      'Remove ads',
+                    )}
+                    {'  ›'}
+                  </Text>
+                </TouchableOpacity>
+              ) : null}
             </View>
           </View>
-
-          {!isPremium ? (
-            <View style={styles.quotaDots}>
-              {Array.from({
-                length:
-                  FREE_DAILY_AI_SCAN_LIMIT,
-              }).map(
-                (_, index) => {
-                  const available =
-                    index <
-                    remainingScans;
-
-                  return (
-                    <View
-                      key={index}
-                      style={[
-                        styles.quotaDot,
-                        available &&
-                          styles.quotaDotAvailable,
-                      ]}
-                    />
-                  );
-                },
-              )}
-            </View>
-          ) : null}
         </View>
 
         <View style={styles.previewCard}>
           {imageUri ? (
-            <Image
-              source={{
-                uri: imageUri,
-              }}
-              style={styles.preview}
-            />
-          ) : (
-            <View style={styles.emptyPreview}>
-              <Text style={styles.cameraIcon}>
-                📷
-              </Text>
+            <View style={styles.previewWrap}>
+              <Image
+                source={{
+                  uri: imageUri,
+                }}
+                style={styles.preview}
+              />
 
-              <Text style={styles.emptyTitle}>
-                {t(
-                  'mealScan.photoGuideTitle',
-                  'Place the full meal inside the frame',
-                )}
-              </Text>
+              {analyzing ? (
+                <View
+                  pointerEvents="none"
+                  style={styles.liveScanOverlay}
+                >
+                  <View style={styles.previewShadeStrong} />
 
-              <Text style={styles.emptyText}>
-                {t(
-                  'mealScan.photoGuideBody',
-                  'Good lighting and a top or 45° angle help the AI recognize portions.',
-                )}
-              </Text>
+                  <Animated.View
+                    style={[
+                      styles.scanPulseLayer,
+                      {
+                        opacity:
+                          scanPulseOpacity,
+                        transform: [
+                          {
+                            scale:
+                              scanPulseScale,
+                          },
+                        ],
+                      },
+                    ]}
+                  />
+
+                  <View style={styles.aiHudTop}>
+                    <View style={styles.aiVisionBadge}>
+                      <View style={styles.aiVisionDot} />
+                      <Text style={styles.aiVisionBadgeText}>
+                        {t(
+                          'mealScan.aiVisionBadge',
+                          'CALOLENS AI VISION',
+                        )}
+                      </Text>
+                    </View>
+
+                    <Animated.View
+                      style={[
+                        styles.aiOrbitBadge,
+                        {
+                          transform: [
+                            {
+                              rotate:
+                                scannerOrbitRotate,
+                            },
+                          ],
+                        },
+                      ]}
+                    >
+                      <Text style={styles.aiOrbitSpark}>✦</Text>
+                    </Animated.View>
+                  </View>
+
+                  <View style={styles.scanFrame}>
+                    <View style={styles.scanGrid}>
+                      <View style={[styles.scanGridV, {left: '25%'}]} />
+                      <View style={[styles.scanGridV, {left: '50%'}]} />
+                      <View style={[styles.scanGridV, {left: '75%'}]} />
+                      <View style={[styles.scanGridH, {top: '25%'}]} />
+                      <View style={[styles.scanGridH, {top: '50%'}]} />
+                      <View style={[styles.scanGridH, {top: '75%'}]} />
+                    </View>
+
+                    <View
+                      style={[
+                        styles.corner,
+                        styles.cornerTL,
+                        styles.cornerPremium,
+                      ]}
+                    />
+                    <View
+                      style={[
+                        styles.corner,
+                        styles.cornerTR,
+                        styles.cornerPremium,
+                      ]}
+                    />
+                    <View
+                      style={[
+                        styles.corner,
+                        styles.cornerBL,
+                        styles.cornerPremium,
+                      ]}
+                    />
+                    <View
+                      style={[
+                        styles.corner,
+                        styles.cornerBR,
+                        styles.cornerPremium,
+                      ]}
+                    />
+
+                    <Animated.View
+                      style={[
+                        styles.scanFocusRing,
+                        {
+                          opacity:
+                            scannerGlowOpacity,
+                          transform: [
+                            {
+                              scale:
+                                scannerFocusScale,
+                            },
+                          ],
+                        },
+                      ]}
+                    >
+                      <View style={styles.scanFocusInner}>
+                        <View style={styles.scanFocusDot} />
+                      </View>
+                    </Animated.View>
+
+                    <Animated.View
+                      style={[
+                        styles.sparkleOne,
+                        {
+                          opacity:
+                            scannerGlowOpacity,
+                          transform: [
+                            {
+                              scale:
+                                scannerFocusScale,
+                            },
+                          ],
+                        },
+                      ]}
+                    >
+                      <Text style={styles.sparkleText}>✦</Text>
+                    </Animated.View>
+                    <Animated.View
+                      style={[
+                        styles.sparkleTwo,
+                        {
+                          opacity:
+                            scanPulseOpacity,
+                          transform: [
+                            {
+                              scale:
+                                scanPulseScale,
+                            },
+                          ],
+                        },
+                      ]}
+                    >
+                      <Text style={styles.sparkleTextSmall}>✦</Text>
+                    </Animated.View>
+
+                    <Animated.View
+                      style={[
+                        styles.scanLineWrap,
+                        {
+                          transform: [
+                            {
+                              translateY:
+                                scanLineTranslateY,
+                            },
+                          ],
+                        },
+                      ]}
+                    >
+                      <View style={styles.scanLineAura} />
+                      <View style={styles.scanLineGlow} />
+                      <View style={styles.scanLineCore} />
+                      <View style={styles.scanLineHotspot} />
+                    </Animated.View>
+                  </View>
+
+                  <View style={styles.scanStatusCard}>
+                    <View style={styles.scanStatusTopRow}>
+                      <View style={styles.scanStatusHeader}>
+                        <ActivityIndicator
+                          size="small"
+                          color="#FF8458"
+                        />
+                        <View style={styles.scanStatusTextWrap}>
+                          <Text style={styles.scanStatusTitle}>
+                            {t(
+                              'mealScan.liveScanTitle',
+                              'AI is analyzing your meal',
+                            )}
+                          </Text>
+                          <Text style={styles.scanStatusEyebrow}>
+                            {t(
+                              'mealScan.liveScanSubtitle',
+                              'Real-time food recognition',
+                            )}
+                          </Text>
+                        </View>
+                      </View>
+
+                      <View style={styles.liveBadge}>
+                        <View style={styles.liveDot} />
+                        <Text style={styles.liveBadgeText}>
+                          {t(
+                            'mealScan.liveBadge',
+                            'LIVE',
+                          )}
+                        </Text>
+                      </View>
+                    </View>
+
+                    <View style={styles.aiProgressTrack}>
+                      <View
+                        style={[
+                          styles.aiProgressFill,
+                          {width: scanProgressWidth},
+                        ]}
+                      />
+                    </View>
+
+                    <View style={styles.scanStepRow}>
+                      {scanStages.map((stage, index) => {
+                        const isActive =
+                          index === scanStageIndex;
+                        const isDone =
+                          index < scanStageIndex;
+
+                        return (
+                          <View
+                            key={stage}
+                            style={styles.scanStepItem}
+                          >
+                            <View
+                              style={[
+                                styles.scanStepCircle,
+                                (isActive || isDone) &&
+                                  styles.scanStepCircleActive,
+                                isDone &&
+                                  styles.scanStepCircleDone,
+                              ]}
+                            >
+                              <Text
+                                style={[
+                                  styles.scanStepNumber,
+                                  (isActive || isDone) &&
+                                    styles.scanStepNumberActive,
+                                ]}
+                              >
+                                {isDone ? '✓' : index + 1}
+                              </Text>
+                            </View>
+                            <Text
+                              numberOfLines={2}
+                              style={[
+                                styles.scanStepLabel,
+                                isActive &&
+                                  styles.scanStepLabelActive,
+                              ]}
+                            >
+                              {stage}
+                            </Text>
+                          </View>
+                        );
+                      })}
+                    </View>
+
+                    <View style={styles.currentScanStage}>
+                      <Text style={styles.currentScanStageIcon}>✦</Text>
+                      <Text style={styles.currentScanStageText}>
+                        {scanStages[scanStageIndex]}
+                      </Text>
+                    </View>
+                  </View>
+                </View>
+              ) : null}
             </View>
+          ) : (
+            <ImageBackground
+              source={require('../assets/calo_scan_sample.jpg')}
+              style={styles.emptyPreview}
+              imageStyle={styles.emptyPreviewImage}
+              resizeMode="cover"
+            >
+              <View style={styles.previewShade} />
+              <View style={styles.emptyScanFrame}>
+                <View style={[styles.corner, styles.cornerTL]} />
+                <View style={[styles.corner, styles.cornerTR]} />
+                <View style={[styles.corner, styles.cornerBL]} />
+                <View style={[styles.corner, styles.cornerBR]} />
+              </View>
+
+              <View style={styles.guideBubble}>
+                <Text style={styles.guideBubbleIcon}>📷</Text>
+                <View style={styles.guideBubbleBody}>
+                  <Text style={styles.emptyTitle}>
+                    {t(
+                      'mealScan.photoGuideTitle',
+                      'Place the full meal inside the frame',
+                    )}
+                  </Text>
+                  <Text style={styles.emptyText}>
+                    {t(
+                      'mealScan.photoGuideBody',
+                      'Good lighting and a top or 45° angle help the AI recognize portions.',
+                    )}
+                  </Text>
+                </View>
+              </View>
+            </ImageBackground>
           )}
         </View>
 
@@ -1001,7 +1303,7 @@ React.FC = () => {
               <>
                 <ActivityIndicator
                   size="small"
-                  color="#10230F"
+                  color="#FFFFFF"
                 />
 
                 <Text style={styles.analyzeText}>
@@ -1149,6 +1451,34 @@ React.FC = () => {
           </View>
         </View>
 
+        <ImageBackground
+          source={require('../assets/calo_guidance_food.jpg')}
+          style={styles.footerVisual}
+          imageStyle={styles.footerVisualImage}
+        >
+          <View style={styles.footerVisualTint} />
+          <View style={styles.footerVisualContent}>
+            <Text style={styles.footerVisualKicker}>
+              {t(
+                'mealScan.footerKicker',
+                'SMART SCANNING',
+              )}
+            </Text>
+            <Text style={styles.footerVisualTitle}>
+              {t(
+                'mealScan.footerTitle',
+                'Better photos lead to better calorie estimates',
+              )}
+            </Text>
+            <Text style={styles.footerVisualText}>
+              {t(
+                'mealScan.footerBody',
+                'Keep the full meal visible, use good lighting and let CaloLens help you log food faster.',
+              )}
+            </Text>
+          </View>
+        </ImageBackground>
+
         <View style={styles.notice}>
           <Text style={styles.noticeText}>
             {t(
@@ -1176,10 +1506,10 @@ const styles =
     kickerPill: {
       alignSelf: 'flex-start',
       backgroundColor:
-        'rgba(24, 163, 155, 0.10)',
+        'rgba(244, 123, 53, 0.10)',
       borderWidth: 1,
       borderColor:
-        'rgba(24, 163, 155, 0.36)',
+        'rgba(244, 123, 53, 0.36)',
       borderRadius: 999,
       paddingHorizontal: 11,
       paddingVertical: 6,
@@ -1214,9 +1544,9 @@ const styles =
     },
     quotaCardPremium: {
       backgroundColor:
-        'rgba(99, 201, 52, 0.09)',
+        'rgba(255, 90, 31, 0.09)',
       borderColor:
-        'rgba(99, 201, 52, 0.32)',
+        'rgba(255, 90, 31, 0.32)',
     },
     quotaHeader: {
       flexDirection: 'row',
@@ -1236,32 +1566,21 @@ const styles =
       fontSize: 13,
       fontWeight: '900',
     },
-    quotaValue: {
-      color: '#8B6500',
-      fontSize: 12,
-      fontWeight: '900',
-      marginTop: 4,
-    },
     quotaNotice: {
       color: MUTED,
       fontSize: 10,
       lineHeight: 15,
       marginTop: 4,
     },
-    quotaDots: {
-      flexDirection: 'row',
-      marginTop: 11,
+    premiumCta: {
+      alignSelf: 'flex-start',
+      marginTop: 9,
+      paddingVertical: 4,
     },
-    quotaDot: {
-      flex: 1,
-      height: 6,
-      borderRadius: 999,
-      backgroundColor:
-        'rgba(109, 120, 111, 0.20)',
-      marginHorizontal: 3,
-    },
-    quotaDotAvailable: {
-      backgroundColor: GREEN,
+    premiumCtaText: {
+      color: NEON,
+      fontSize: 11,
+      fontWeight: '900',
     },
     previewCard: {
       height: 360,
@@ -1269,31 +1588,504 @@ const styles =
       backgroundColor: CARD,
       borderWidth: 1,
       borderColor:
-        '#DCE6D8',
+        '#F0D8C7',
       overflow: 'hidden',
       marginTop: 18,
+    },
+    previewWrap: {
+      flex: 1,
     },
     preview: {
       width: '100%',
       height: '100%',
       resizeMode: 'cover',
     },
+
+    // Original pre-scan preview: keep the old CaloLens framing and guide bubble.
     emptyPreview: {
       flex: 1,
+      justifyContent: 'space-between',
+      padding: 16,
+      backgroundColor: '#3D2418',
+    },
+    emptyPreviewImage: {
+      borderRadius: 24,
+    },
+    previewShade: {
+      ...StyleSheet.absoluteFillObject,
+      backgroundColor:
+        'rgba(35, 17, 8, 0.12)',
+    },
+    emptyScanFrame: {
+      flex: 1,
+      margin: 10,
+      borderRadius: 28,
+      position: 'relative',
+    },
+
+    // Premium scanner frame is only shown while AI analysis is running.
+    scanFrame: {
+      position: 'absolute',
+      top: 50,
+      left: 14,
+      right: 14,
+      bottom: 16,
+    },
+    corner: {
+      position: 'absolute',
+      width: 46,
+      height: 46,
+      borderColor: '#FFFFFF',
+    },
+    cornerTL: {
+      top: 0,
+      left: 0,
+      borderTopWidth: 5,
+      borderLeftWidth: 5,
+      borderTopLeftRadius: 14,
+    },
+    cornerTR: {
+      top: 0,
+      right: 0,
+      borderTopWidth: 5,
+      borderRightWidth: 5,
+      borderTopRightRadius: 14,
+    },
+    cornerBL: {
+      bottom: 0,
+      left: 0,
+      borderBottomWidth: 5,
+      borderLeftWidth: 5,
+      borderBottomLeftRadius: 14,
+    },
+    cornerBR: {
+      bottom: 0,
+      right: 0,
+      borderBottomWidth: 5,
+      borderRightWidth: 5,
+      borderBottomRightRadius: 14,
+    },
+    liveScanOverlay: {
+      ...StyleSheet.absoluteFillObject,
+      justifyContent: 'space-between',
+      padding: 14,
+    },
+    previewShadeStrong: {
+      ...StyleSheet.absoluteFillObject,
+      backgroundColor:
+        'rgba(25, 16, 11, 0.28)',
+    },
+    scanPulseLayer: {
+      position: 'absolute',
+      top: 18,
+      left: 18,
+      right: 18,
+      bottom: 18,
+      borderRadius: 30,
+      borderWidth: 1,
+      borderColor:
+        'rgba(255,132,88,0.42)',
+      backgroundColor:
+        'rgba(255,90,31,0.035)',
+      shadowColor: '#FF6A33',
+      shadowOpacity: 0.34,
+      shadowRadius: 18,
+      shadowOffset: {
+        width: 0,
+        height: 0,
+      },
+    },
+    aiHudTop: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      justifyContent: 'space-between',
+      zIndex: 5,
+    },
+    aiVisionBadge: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      backgroundColor:
+        'rgba(24, 17, 12, 0.76)',
+      borderRadius: 999,
+      borderWidth: 1,
+      borderColor:
+        'rgba(255,255,255,0.18)',
+      paddingHorizontal: 10,
+      paddingVertical: 7,
+    },
+    aiVisionDot: {
+      width: 7,
+      height: 7,
+      borderRadius: 99,
+      backgroundColor: '#65D36E',
+      marginRight: 7,
+      shadowColor: '#65D36E',
+      shadowOpacity: 0.9,
+      shadowRadius: 6,
+      shadowOffset: {width: 0, height: 0},
+      elevation: 5,
+    },
+    aiVisionBadgeText: {
+      color: '#FFFFFF',
+      fontSize: 9,
+      fontWeight: '900',
+      letterSpacing: 1.15,
+    },
+    aiOrbitBadge: {
+      width: 34,
+      height: 34,
+      borderRadius: 17,
+      borderWidth: 1,
+      borderColor:
+        'rgba(255,132,88,0.52)',
+      backgroundColor:
+        'rgba(30,19,12,0.70)',
       alignItems: 'center',
       justifyContent: 'center',
-      padding: 24,
-      backgroundColor: '#EEF4EA',
     },
-    cameraIcon: {
-      fontSize: 52,
+    aiOrbitSpark: {
+      color: '#FF8458',
+      fontSize: 17,
+      fontWeight: '900',
+    },
+    scanGrid: {
+      ...StyleSheet.absoluteFillObject,
+      opacity: 0.24,
+    },
+    scanGridV: {
+      position: 'absolute',
+      top: 6,
+      bottom: 6,
+      width: 1,
+      backgroundColor:
+        'rgba(255,255,255,0.22)',
+    },
+    scanGridH: {
+      position: 'absolute',
+      left: 6,
+      right: 6,
+      height: 1,
+      backgroundColor:
+        'rgba(255,255,255,0.22)',
+    },
+    cornerPremium: {
+      borderColor: '#FF8458',
+      shadowColor: '#FF6A33',
+      shadowOpacity: 0.7,
+      shadowRadius: 7,
+      shadowOffset: {width: 0, height: 0},
+      elevation: 5,
+    },
+    scanFocusRing: {
+      position: 'absolute',
+      top: '50%',
+      left: '50%',
+      width: 74,
+      height: 74,
+      marginLeft: -37,
+      marginTop: -37,
+      borderRadius: 37,
+      borderWidth: 1,
+      borderColor:
+        'rgba(255,132,88,0.82)',
+      alignItems: 'center',
+      justifyContent: 'center',
+      backgroundColor:
+        'rgba(255,90,31,0.05)',
+    },
+    scanFocusInner: {
+      width: 30,
+      height: 30,
+      borderRadius: 15,
+      borderWidth: 1,
+      borderColor:
+        'rgba(255,255,255,0.75)',
+      alignItems: 'center',
+      justifyContent: 'center',
+    },
+    scanFocusDot: {
+      width: 7,
+      height: 7,
+      borderRadius: 99,
+      backgroundColor: '#65D36E',
+      shadowColor: '#65D36E',
+      shadowOpacity: 0.9,
+      shadowRadius: 6,
+      shadowOffset: {width: 0, height: 0},
+    },
+    sparkleOne: {
+      position: 'absolute',
+      top: '28%',
+      right: '18%',
+    },
+    sparkleTwo: {
+      position: 'absolute',
+      bottom: '30%',
+      left: '16%',
+    },
+    sparkleText: {
+      color: '#FFD2B8',
+      fontSize: 17,
+      fontWeight: '900',
+      textShadowColor:
+        'rgba(255,90,31,0.85)',
+      textShadowRadius: 8,
+    },
+    sparkleTextSmall: {
+      color: '#FFFFFF',
+      fontSize: 11,
+      fontWeight: '900',
+      textShadowColor:
+        'rgba(255,255,255,0.75)',
+      textShadowRadius: 6,
+    },
+    scanLineWrap: {
+      position: 'absolute',
+      left: 8,
+      right: 8,
+      height: 34,
+      alignItems: 'center',
+      justifyContent: 'center',
+    },
+    scanLineAura: {
+      position: 'absolute',
+      left: 0,
+      right: 0,
+      height: 34,
+      borderRadius: 999,
+      backgroundColor:
+        'rgba(255, 90, 31, 0.08)',
+    },
+    scanLineGlow: {
+      position: 'absolute',
+      left: 6,
+      right: 6,
+      height: 18,
+      borderRadius: 999,
+      backgroundColor:
+        'rgba(255, 132, 88, 0.22)',
+    },
+    scanLineCore: {
+      width: '100%',
+      height: 3,
+      borderRadius: 999,
+      backgroundColor: '#FF8458',
+      shadowColor: '#FF6A33',
+      shadowOpacity: 0.95,
+      shadowRadius: 12,
+      shadowOffset: {
+        width: 0,
+        height: 0,
+      },
+      elevation: 8,
+    },
+    scanLineHotspot: {
+      position: 'absolute',
+      width: 58,
+      height: 5,
+      borderRadius: 999,
+      backgroundColor: '#FFFFFF',
+      shadowColor: '#FFFFFF',
+      shadowOpacity: 0.9,
+      shadowRadius: 7,
+      shadowOffset: {width: 0, height: 0},
+    },
+    scanStatusCard: {
+      backgroundColor:
+        'rgba(26, 17, 12, 0.88)',
+      borderRadius: 20,
+      borderWidth: 1,
+      borderColor:
+        'rgba(255,255,255,0.15)',
+      paddingHorizontal: 14,
+      paddingVertical: 13,
+      marginTop: 'auto',
+      shadowColor: '#000000',
+      shadowOpacity: 0.24,
+      shadowRadius: 14,
+      shadowOffset: {width: 0, height: 7},
+      elevation: 9,
+    },
+    scanStatusTopRow: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      justifyContent: 'space-between',
+    },
+    scanStatusHeader: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      flex: 1,
+      paddingRight: 8,
+    },
+    scanStatusTextWrap: {
+      flex: 1,
+      minWidth: 0,
+    },
+    scanStatusTitle: {
+      color: '#FFFFFF',
+      fontSize: 13,
+      lineHeight: 16,
+      fontWeight: '900',
+      marginLeft: 9,
+    },
+    scanStatusEyebrow: {
+      color:
+        'rgba(255,255,255,0.58)',
+      fontSize: 9,
+      lineHeight: 12,
+      fontWeight: '700',
+      marginLeft: 9,
+      marginTop: 2,
+    },
+    liveBadge: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      borderRadius: 999,
+      backgroundColor:
+        'rgba(101,211,110,0.12)',
+      borderWidth: 1,
+      borderColor:
+        'rgba(101,211,110,0.28)',
+      paddingHorizontal: 8,
+      paddingVertical: 5,
+    },
+    liveDot: {
+      width: 6,
+      height: 6,
+      borderRadius: 99,
+      backgroundColor: '#65D36E',
+      marginRight: 5,
+    },
+    liveBadgeText: {
+      color: '#BFF4C3',
+      fontSize: 8,
+      fontWeight: '900',
+      letterSpacing: 0.8,
+    },
+    aiProgressTrack: {
+      height: 5,
+      borderRadius: 999,
+      backgroundColor:
+        'rgba(255,255,255,0.10)',
+      overflow: 'hidden',
+      marginTop: 11,
+    },
+    aiProgressFill: {
+      height: '100%',
+      borderRadius: 999,
+      backgroundColor: '#FF6A33',
+    },
+    scanStepRow: {
+      flexDirection: 'row',
+      marginTop: 10,
+      marginHorizontal: -4,
+    },
+    scanStepItem: {
+      flex: 1,
+      alignItems: 'center',
+      paddingHorizontal: 4,
+    },
+    scanStepCircle: {
+      width: 24,
+      height: 24,
+      borderRadius: 12,
+      alignItems: 'center',
+      justifyContent: 'center',
+      borderWidth: 1,
+      borderColor:
+        'rgba(255,255,255,0.18)',
+      backgroundColor:
+        'rgba(255,255,255,0.07)',
+    },
+    scanStepCircleActive: {
+      borderColor:
+        'rgba(255,132,88,0.78)',
+      backgroundColor:
+        'rgba(255,90,31,0.20)',
+    },
+    scanStepCircleDone: {
+      borderColor:
+        'rgba(101,211,110,0.65)',
+      backgroundColor:
+        'rgba(101,211,110,0.16)',
+    },
+    scanStepNumber: {
+      color:
+        'rgba(255,255,255,0.52)',
+      fontSize: 9,
+      fontWeight: '900',
+    },
+    scanStepNumberActive: {
+      color: '#FFFFFF',
+    },
+    scanStepLabel: {
+      color:
+        'rgba(255,255,255,0.54)',
+      fontSize: 8,
+      lineHeight: 10,
+      minHeight: 20,
+      fontWeight: '800',
+      marginTop: 5,
+      textAlign: 'center',
+    },
+    scanStepLabelActive: {
+      color: '#FFFFFF',
+    },
+    currentScanStage: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      justifyContent: 'center',
+      borderRadius: 12,
+      backgroundColor:
+        'rgba(255,255,255,0.07)',
+      borderWidth: 1,
+      borderColor:
+        'rgba(255,255,255,0.08)',
+      marginTop: 10,
+      paddingVertical: 7,
+      paddingHorizontal: 10,
+    },
+    currentScanStageIcon: {
+      color: '#FF8458',
+      fontSize: 11,
+      fontWeight: '900',
+      marginRight: 6,
+    },
+    currentScanStageText: {
+      color: '#FFFFFF',
+      fontSize: 10,
+      fontWeight: '900',
+      textAlign: 'center',
+    },
+    guideBubble: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      backgroundColor:
+        'rgba(255,255,255,0.94)',
+      borderRadius: 18,
+      padding: 13,
+      shadowColor: '#4A2411',
+      shadowOpacity: 0.18,
+      shadowRadius: 10,
+      shadowOffset: {
+        width: 0,
+        height: 4,
+      },
+      elevation: 4,
+    },
+    guideBubbleIcon: {
+      fontSize: 27,
+      marginRight: 10,
+    },
+    guideBubbleBody: {
+      flex: 1,
     },
     emptyTitle: {
       color: TEXT,
       fontSize: 17,
       fontWeight: '900',
       textAlign: 'center',
-      marginTop: 13,
+      marginTop: 0,
     },
     emptyText: {
       color: MUTED,
@@ -1309,17 +2101,15 @@ const styles =
     primaryButton: {
       flex: 1,
       borderRadius: 999,
-      backgroundColor:
-        'rgba(99, 201, 52, 0.12)',
+      backgroundColor: '#FF5A1F',
       borderWidth: 1,
-      borderColor:
-        'rgba(99, 201, 52, 0.40)',
+      borderColor: '#FF5A1F',
       paddingVertical: 13,
       alignItems: 'center',
       marginRight: 6,
     },
     primaryText: {
-      color: NEON,
+      color: '#FFFFFF',
       fontSize: 13,
       fontWeight: '900',
     },
@@ -1327,10 +2117,10 @@ const styles =
       flex: 1,
       borderRadius: 999,
       backgroundColor:
-        'rgba(24, 163, 155, 0.08)',
+        'rgba(244, 123, 53, 0.08)',
       borderWidth: 1,
       borderColor:
-        'rgba(24, 163, 155, 0.28)',
+        'rgba(244, 123, 53, 0.28)',
       paddingVertical: 13,
       alignItems: 'center',
       marginLeft: 6,
@@ -1343,14 +2133,14 @@ const styles =
     analyzeButton: {
       minHeight: 50,
       borderRadius: 999,
-      backgroundColor: GREEN,
+      backgroundColor: '#FF5A1F',
       flexDirection: 'row',
       alignItems: 'center',
       justifyContent: 'center',
       marginTop: 13,
     },
     analyzeText: {
-      color: '#10230F',
+      color: '#FFFFFF',
       fontSize: 15,
       fontWeight: '900',
       marginLeft: 7,
@@ -1363,10 +2153,10 @@ const styles =
       borderRadius: 20,
       borderWidth: 1,
       borderColor:
-        'rgba(109, 120, 111, 0.18)',
+        'rgba(120, 105, 95, 0.18)',
       padding: 13,
       marginTop: 13,
-      shadowColor: '#879487',
+      shadowColor: '#B89079',
       shadowOpacity: 0.06,
       shadowRadius: 9,
       shadowOffset: {
@@ -1412,11 +2202,11 @@ const styles =
       minHeight: 82,
       alignItems: 'center',
       justifyContent: 'center',
-      backgroundColor: '#F5F8F2',
+      backgroundColor: '#FFF8F2',
       borderRadius: 16,
       borderWidth: 1,
       borderColor:
-        'rgba(109, 120, 111, 0.16)',
+        'rgba(120, 105, 95, 0.16)',
       paddingHorizontal: 5,
       marginHorizontal: 4,
     },
@@ -1431,15 +2221,15 @@ const styles =
     },
     methodIconSearch: {
       backgroundColor:
-        'rgba(24, 163, 155, 0.09)',
+        'rgba(244, 123, 53, 0.09)',
       borderColor:
-        'rgba(24, 163, 155, 0.25)',
+        'rgba(244, 123, 53, 0.25)',
     },
     methodIconBarcode: {
       backgroundColor:
-        'rgba(43, 130, 217, 0.08)',
+        'rgba(255, 147, 80, 0.08)',
       borderColor:
-        'rgba(43, 130, 217, 0.23)',
+        'rgba(255, 147, 80, 0.23)',
     },
     methodIconManual: {
       backgroundColor:
@@ -1457,6 +2247,50 @@ const styles =
       fontSize: 9,
       fontWeight: '900',
       textAlign: 'center',
+    },
+    footerVisual: {
+      minHeight: 176,
+      borderRadius: 24,
+      overflow: 'hidden',
+      marginTop: 16,
+      justifyContent: 'flex-end',
+      borderWidth: 1,
+      borderColor:
+        'rgba(255, 106, 33, 0.16)',
+    },
+    footerVisualImage: {
+      resizeMode: 'cover',
+    },
+    footerVisualTint: {
+      ...StyleSheet.absoluteFillObject,
+      backgroundColor:
+        'rgba(255, 248, 242, 0.28)',
+    },
+    footerVisualContent: {
+      paddingHorizontal: 18,
+      paddingVertical: 18,
+      backgroundColor:
+        'rgba(255, 255, 255, 0.74)',
+      margin: 14,
+      borderRadius: 18,
+    },
+    footerVisualKicker: {
+      color: CYAN,
+      fontSize: 10,
+      fontWeight: '900',
+      letterSpacing: 1,
+    },
+    footerVisualTitle: {
+      color: TEXT,
+      fontSize: 20,
+      fontWeight: '900',
+      marginTop: 6,
+    },
+    footerVisualText: {
+      color: MUTED,
+      fontSize: 12,
+      lineHeight: 18,
+      marginTop: 8,
     },
     notice: {
       backgroundColor:

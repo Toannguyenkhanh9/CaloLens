@@ -1,4 +1,6 @@
 // FILE: src/screens/AdvancedMealPlanScreen.tsx
+import FoodAccentCard from '../components/FoodAccentCard';
+import HeroFoodCornerAccent from '../components/HeroFoodCornerAccent';
 import React, {
   useCallback,
   useMemo,
@@ -30,13 +32,13 @@ import type {
 const PROFILE_KEY =
   'user:profile';
 
-const BG = '#F5F8F2';
+const BG = '#FFF8F2';
 const CARD = '#FFFFFF';
-const TEXT = '#17211A';
-const MUTED = '#6D786F';
-const NEON = '#63C934';
-const CYAN = '#18A39B';
-const BORDER = '#DDE8D9';
+const TEXT = '#21170F';
+const MUTED = '#78695F';
+const NEON = '#FF6A21';
+const CYAN = '#F29132';
+const BORDER = '#F1D9C8';
 
 const mealIcons = [
   '🌅',
@@ -98,6 +100,8 @@ React.FC = () => {
         barStyle="dark-content"
         backgroundColor={BG}
       />
+
+      <HeroFoodCornerAccent />
 
       <View
         pointerEvents="none"
@@ -270,6 +274,8 @@ React.FC = () => {
             </View>
           </>
         )}
+
+        <FoodAccentCard variant="hero" height={170} />
       </ScrollView>
     </View>
   );
@@ -294,7 +300,7 @@ const styles =
       height: 260,
       borderRadius: 130,
       backgroundColor:
-        'rgba(24, 163, 155, 0.08)',
+        'rgba(242, 145, 50, 0.08)',
     },
     glowBottom: {
       position: 'absolute',
@@ -304,7 +310,7 @@ const styles =
       height: 250,
       borderRadius: 125,
       backgroundColor:
-        'rgba(99, 201, 52, 0.08)',
+        'rgba(255, 106, 33, 0.08)',
     },
     hero: {
       paddingHorizontal: 5,
@@ -317,9 +323,9 @@ const styles =
       borderRadius: 999,
       borderWidth: 1,
       borderColor:
-        'rgba(24, 163, 155, 0.30)',
+        'rgba(242, 145, 50, 0.30)',
       backgroundColor:
-        'rgba(24, 163, 155, 0.08)',
+        'rgba(242, 145, 50, 0.08)',
       marginBottom: 14,
     },
     kickerText: {
@@ -351,7 +357,7 @@ const styles =
       borderRadius: 22,
       borderWidth: 1,
       borderColor:
-        'rgba(99, 201, 52, 0.26)',
+        'rgba(255, 106, 33, 0.26)',
       padding: 15,
       marginBottom: 20,
       shadowColor: '#849087',
@@ -406,7 +412,7 @@ const styles =
       borderColor: BORDER,
       padding: 12,
       marginBottom: 9,
-      shadowColor: '#879487',
+      shadowColor: '#C28A66',
       shadowOpacity: 0.06,
       shadowRadius: 8,
       shadowOffset: {
@@ -422,7 +428,7 @@ const styles =
       alignItems: 'center',
       justifyContent: 'center',
       backgroundColor:
-        'rgba(99, 201, 52, 0.10)',
+        'rgba(255, 106, 33, 0.10)',
       marginRight: 11,
     },
     mealIconText: {
@@ -469,7 +475,7 @@ const styles =
       marginRight: 10,
     },
     tipIconText: {
-      color: '#D99A00',
+      color: '#F5A623',
       fontSize: 17,
       fontWeight: '900',
     },
@@ -492,7 +498,7 @@ const styles =
       borderRadius: 22,
       borderWidth: 1,
       borderColor:
-        'rgba(99, 201, 52, 0.24)',
+        'rgba(255, 106, 33, 0.24)',
       padding: 18,
     },
     emptyIcon: {
@@ -502,7 +508,7 @@ const styles =
       alignItems: 'center',
       justifyContent: 'center',
       backgroundColor:
-        'rgba(99, 201, 52, 0.10)',
+        'rgba(255, 106, 33, 0.10)',
       marginBottom: 12,
     },
     emptyEmoji: {

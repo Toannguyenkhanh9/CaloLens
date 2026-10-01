@@ -1,4 +1,6 @@
 // FILE: src/screens/MealReviewScreen.tsx
+import FoodAccentCard from '../components/FoodAccentCard';
+import HeroFoodCornerAccent from '../components/HeroFoodCornerAccent';
 import React, {
   useMemo,
   useState,
@@ -31,12 +33,12 @@ import {
   LoggedMealType,
 } from '../nutrition/mealLog';
 
-const BG = '#F5F8F2';
+const BG = '#FFF8F2';
 const CARD = '#FFFFFF';
-const TEXT = '#17211A';
-const MUTED = '#6D786F';
-const NEON = '#63C934';
-const CYAN = '#18A39B';
+const TEXT = '#21170F';
+const MUTED = '#78695F';
+const NEON = '#FF6A21';
+const CYAN = '#F29132';
 
 type EditableFood =
   AiFoodCandidate;
@@ -310,6 +312,7 @@ React.FC = () => {
 
   return (
     <View style={styles.container}>
+      <HeroFoodCornerAccent />
       <ScrollView
         keyboardShouldPersistTaps="handled"
         showsVerticalScrollIndicator={false}
@@ -713,7 +716,7 @@ React.FC = () => {
           </Text>
         </TouchableOpacity>
 
-
+        <FoodAccentCard variant="guidance" height={148} />
       </ScrollView>
     </View>
   );
@@ -767,7 +770,7 @@ const styles =
       borderRadius: 13,
       borderWidth: 1,
       borderColor:
-        'rgba(109, 120, 111, 0.20)',
+        'rgba(120, 105, 95, 0.20)',
       alignItems: 'center',
       justifyContent: 'center',
       marginHorizontal: 3,
@@ -782,14 +785,14 @@ const styles =
       fontWeight: '900',
     },
     segmentTextActive: {
-      color: '#10230F',
+      color: '#FFFFFF',
     },
     foodCard: {
       backgroundColor: CARD,
       borderRadius: 19,
       borderWidth: 1,
       borderColor:
-        'rgba(109, 120, 111, 0.17)',
+        'rgba(120, 105, 95, 0.17)',
       padding: 13,
       marginBottom: 12,
     },
@@ -810,7 +813,7 @@ const styles =
       fontWeight: '900',
     },
     inputLabel: {
-      color: '#526057',
+      color: '#6E5F55',
       fontSize: 11,
       fontWeight: '900',
       marginBottom: 6,
@@ -821,7 +824,7 @@ const styles =
       backgroundColor: BG,
       borderWidth: 1,
       borderColor:
-        'rgba(109, 120, 111, 0.18)',
+        'rgba(120, 105, 95, 0.18)',
       color: TEXT,
       paddingHorizontal: 11,
       fontSize: 14,
@@ -862,7 +865,7 @@ const styles =
       backgroundColor: BG,
       borderWidth: 1,
       borderColor:
-        'rgba(109, 120, 111, 0.17)',
+        'rgba(120, 105, 95, 0.17)',
       color: TEXT,
       paddingHorizontal: 9,
       fontWeight: '900',
@@ -877,7 +880,7 @@ const styles =
       borderRadius: 999,
       borderWidth: 1,
       borderColor:
-        'rgba(24, 163, 155, 0.30)',
+        'rgba(242, 145, 50, 0.30)',
       paddingVertical: 12,
       alignItems: 'center',
     },
@@ -888,10 +891,10 @@ const styles =
     },
     totalCard: {
       backgroundColor:
-        'rgba(124, 255, 58, 0.1)',
+        'rgba(255, 106, 33, 0.1)',
       borderWidth: 1,
       borderColor:
-        'rgba(124, 255, 58, 0.3)',
+        'rgba(255, 106, 33, 0.3)',
       borderRadius: 19,
       padding: 14,
       marginTop: 0,
@@ -908,7 +911,7 @@ const styles =
       marginTop: 5,
     },
     totalMacros: {
-      color: '#455047',
+      color: '#5F544D',
       fontSize: 12,
       fontWeight: '800',
       marginTop: 4,
@@ -936,7 +939,7 @@ const styles =
       marginTop: 12,
     },
     saveText: {
-      color: '#10230F',
+      color: '#FFFFFF',
       fontSize: 15,
       fontWeight: '900',
     },

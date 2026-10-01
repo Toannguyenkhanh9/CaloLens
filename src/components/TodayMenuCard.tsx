@@ -162,7 +162,7 @@ const styles = StyleSheet.create({
     borderRadius: 22,
     padding: 14,
     borderWidth: 1,
-    borderColor: 'rgba(124, 255, 58, 0.22)',
+    borderColor: 'rgba(255, 90, 31, 0.22)',
     overflow: 'hidden',
   },
   glow: {
@@ -172,7 +172,7 @@ const styles = StyleSheet.create({
     width: 180,
     height: 180,
     borderRadius: 90,
-    backgroundColor: 'rgba(124, 255, 58, 0.11)',
+    backgroundColor: 'rgba(255, 90, 31, 0.11)',
   },
   header: {
     flexDirection: 'row',

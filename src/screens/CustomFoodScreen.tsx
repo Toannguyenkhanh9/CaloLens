@@ -1,4 +1,6 @@
 // FILE: src/screens/CustomFoodScreen.tsx
+import FoodAccentCard from '../components/FoodAccentCard';
+import HeroFoodCornerAccent from '../components/HeroFoodCornerAccent';
 import React, {useState} from 'react';
 import {
   Alert,
@@ -15,13 +17,13 @@ import {useTranslation} from 'react-i18next';
 
 import {saveCustomFood} from '../nutrition/foodLibrary';
 
-const BG = '#F5F8F2';
+const BG = '#FFF8F2';
 const CARD = '#FFFFFF';
-const TEXT = '#17211A';
-const MUTED = '#6D786F';
-const NEON = '#63C934';
-const CYAN = '#18A39B';
-const BORDER = '#DDE8D9';
+const TEXT = '#21170F';
+const MUTED = '#78695F';
+const NEON = '#FF6A21';
+const CYAN = '#F29132';
+const BORDER = '#F1D9C8';
 
 const numberValue = (value: string) => {
   const parsed = Number(value.replace(',', '.'));
@@ -107,6 +109,8 @@ export const CustomFoodScreen: React.FC = () => {
   return (
     <View style={styles.screen}>
       <StatusBar barStyle="dark-content" backgroundColor={BG} />
+
+      <HeroFoodCornerAccent />
       <ScrollView keyboardShouldPersistTaps="handled" showsVerticalScrollIndicator={false} contentContainerStyle={styles.content}>
         <Text style={styles.kicker}>{t('foodTools.customFoodKicker', 'CUSTOM FOOD')}</Text>
         <Text style={styles.title}>{t('foodTools.customFoodTitle', 'Create a reusable food')}</Text>
@@ -142,6 +146,8 @@ export const CustomFoodScreen: React.FC = () => {
         <TouchableOpacity activeOpacity={0.88} style={[styles.saveButton, saving && styles.disabled]} onPress={save} disabled={saving}>
           <Text style={styles.saveText}>{saving ? t('common.saving', 'Saving…') : t('foodTools.saveFood', 'Save food')}</Text>
         </TouchableOpacity>
+
+        <FoodAccentCard variant="guidance" height={145} compact />
       </ScrollView>
     </View>
   );
@@ -157,14 +163,14 @@ const styles = StyleSheet.create({
   card: {backgroundColor: CARD, borderRadius: 20, borderWidth: 1, borderColor: BORDER, padding: 13, marginBottom: 14},
   field: {marginBottom: 11},
   label: {color: TEXT, fontSize: 10, fontWeight: '900', marginBottom: 6},
-  input: {minHeight: 48, borderRadius: 14, borderWidth: 1, borderColor: BORDER, backgroundColor: '#F5F8F2', color: TEXT, fontSize: 14, fontWeight: '800', paddingHorizontal: 12},
+  input: {minHeight: 48, borderRadius: 14, borderWidth: 1, borderColor: BORDER, backgroundColor: '#FFF8F2', color: TEXT, fontSize: 14, fontWeight: '800', paddingHorizontal: 12},
   twoColumn: {flexDirection: 'row'},
   column: {flex: 1, marginRight: 5},
   columnLast: {flex: 1, marginLeft: 5},
   notice: {backgroundColor: '#FFF9E8', borderRadius: 16, borderWidth: 1, borderColor: '#F0DBA2', padding: 12},
   noticeText: {color: '#5C594E', fontSize: 10, lineHeight: 16},
   saveButton: {minHeight: 52, alignItems: 'center', justifyContent: 'center', backgroundColor: NEON, borderRadius: 999, marginTop: 15},
-  saveText: {color: '#10230F', fontSize: 14, fontWeight: '900'},
+  saveText: {color: '#FFFFFF', fontSize: 14, fontWeight: '900'},
   disabled: {opacity: 0.6},
 });
 

@@ -8,6 +8,7 @@ import React, {
 import {
   Dimensions,
   Modal,
+  ImageBackground,
   Platform,
   Pressable,
   ScrollView,
@@ -117,15 +118,15 @@ const LANGS = [
   },
 ];
 
-const BG = '#F5F8F2';
+const BG = '#FFF8F2';
 const CARD = '#FFFFFF';
-const CARD_2 = '#F0F5ED';
-const TEXT = '#17211A';
-const MUTED = '#6D786F';
-const NEON = '#63C934';
-const CYAN = '#18A39B';
-const YELLOW = '#D99A00';
-const BLUE = '#2B82D9';
+const CARD_2 = '#FFF2E8';
+const TEXT = '#21170F';
+const MUTED = '#78695F';
+const NEON = '#FF6A21';
+const CYAN = '#F29132';
+const YELLOW = '#F5A623';
+const BLUE = '#FF9350';
 const RED = '#D85E78';
 
 type SettingRowProps = {
@@ -1229,6 +1230,28 @@ React.FC = () => {
             </Text>
           </View>
         </View>
+
+        <ImageBackground
+          source={require('../assets/calo_guidance_food.jpg')}
+          style={styles.mealFooterCard}
+          imageStyle={styles.mealFooterImage}
+        >
+          <View style={styles.mealFooterOverlay} />
+          <View style={styles.mealFooterContent}>
+            <Text style={styles.mealFooterKicker}>
+              {t('caloLensSettings.mealFooterKicker', 'HEALTHY HABITS')}
+            </Text>
+            <Text style={styles.mealFooterTitle}>
+              {t('caloLensSettings.mealFooterTitle', 'Keep CaloLens fresh, warm and motivating')}
+            </Text>
+            <Text style={styles.mealFooterText}>
+              {t(
+                'caloLensSettings.mealFooterText',
+                'A brighter food-first design helps your nutrition app feel more inviting every day.',
+              )}
+            </Text>
+          </View>
+        </ImageBackground>
       </ScrollView>
 
       <Modal
@@ -1433,7 +1456,7 @@ const styles =
       height: 320,
       borderRadius: 160,
       backgroundColor:
-        'rgba(24, 163, 155, 0.12)',
+        'rgba(242, 145, 50, 0.12)',
     },
     glowMiddle: {
       position: 'absolute',
@@ -1443,7 +1466,7 @@ const styles =
       height: 300,
       borderRadius: 150,
       backgroundColor:
-        'rgba(99, 201, 52, 0.08)',
+        'rgba(255, 106, 33, 0.08)',
     },
     hero: {
       paddingHorizontal: 6,
@@ -1480,16 +1503,16 @@ const styles =
       borderRadius: 999,
       alignItems: 'center',
       backgroundColor:
-        'rgba(109, 120, 111, 0.12)',
+        'rgba(120, 105, 95, 0.12)',
       borderWidth: 1,
       borderColor:
-        'rgba(109, 120, 111, 0.24)',
+        'rgba(120, 105, 95, 0.24)',
     },
     planBadgePremium: {
       backgroundColor:
-        'rgba(99, 201, 52, 0.11)',
+        'rgba(255, 106, 33, 0.11)',
       borderColor:
-        'rgba(99, 201, 52, 0.40)',
+        'rgba(255, 106, 33, 0.34)',
     },
     planBadgeText: {
       color: MUTED,
@@ -1508,7 +1531,7 @@ const styles =
       letterSpacing: -0.7,
     },
     heroSubtitle: {
-      color: '#526057',
+      color: '#6E5F55',
       fontSize: 14,
       lineHeight: 21,
       marginTop: 8,
@@ -1523,7 +1546,7 @@ const styles =
       borderRadius: 22,
       borderWidth: 1,
       borderColor:
-        'rgba(99, 201, 52, 0.25)',
+        'rgba(255, 106, 33, 0.25)',
       paddingHorizontal: 14,
       paddingVertical: 13,
       marginBottom: 22,
@@ -1535,10 +1558,10 @@ const styles =
       alignItems: 'center',
       justifyContent: 'center',
       backgroundColor:
-        'rgba(99, 201, 52, 0.12)',
+        'rgba(255, 106, 33, 0.12)',
       borderWidth: 1,
       borderColor:
-        'rgba(99, 201, 52, 0.40)',
+        'rgba(255, 106, 33, 0.34)',
       marginRight: 12,
     },
     avatarText: {
@@ -1567,7 +1590,7 @@ const styles =
       alignItems: 'center',
       justifyContent: 'center',
       backgroundColor:
-        'rgba(99, 201, 52, 0.10)',
+        'rgba(255, 106, 33, 0.10)',
       marginLeft: 10,
     },
     accountArrowText: {
@@ -1611,7 +1634,7 @@ const styles =
       borderBottomWidth:
         StyleSheet.hairlineWidth,
       borderBottomColor:
-        'rgba(109, 120, 111, 0.18)',
+        'rgba(120, 105, 95, 0.18)',
     },
     rowIcon: {
       width: 44,
@@ -1646,13 +1669,13 @@ const styles =
       borderRadius: 999,
       borderWidth: 1,
       borderColor:
-        'rgba(109, 120, 111, 0.17)',
+        'rgba(120, 105, 95, 0.17)',
       paddingHorizontal: 9,
       paddingVertical: 5,
       marginLeft: 8,
     },
     valueText: {
-      color: '#526057',
+      color: '#6E5F55',
       fontSize: 10,
       fontWeight: '900',
     },
@@ -1673,9 +1696,9 @@ const styles =
     },
     premiumCardActive: {
       backgroundColor:
-        'rgba(99, 201, 52, 0.08)',
+        'rgba(255, 106, 33, 0.08)',
       borderColor:
-        'rgba(99, 201, 52, 0.30)',
+        'rgba(255, 106, 33, 0.30)',
     },
     premiumTopRow: {
       flexDirection: 'row',
@@ -1735,7 +1758,7 @@ const styles =
       marginRight: 5,
     },
     premiumFeatureText: {
-      color: '#455047',
+      color: '#5F544D',
       fontSize: 10,
       fontWeight: '800',
     },
@@ -1755,7 +1778,7 @@ const styles =
       borderRadius: 18,
       borderWidth: 1,
       borderColor:
-        'rgba(109, 120, 111, 0.14)',
+        'rgba(120, 105, 95, 0.14)',
       padding: 12,
       marginBottom: 8,
     },
@@ -1769,7 +1792,7 @@ const styles =
       marginRight: 11,
     },
     footerLogoText: {
-      color: '#10230F',
+      color: '#FFFFFF',
       fontSize: 21,
       fontWeight: '900',
     },
@@ -1787,6 +1810,47 @@ const styles =
       lineHeight: 15,
       marginTop: 4,
     },
+    mealFooterCard: {
+      minHeight: 186,
+      borderRadius: 24,
+      overflow: 'hidden',
+      marginTop: 16,
+      borderWidth: 1,
+      borderColor: 'rgba(255, 106, 33, 0.16)',
+      justifyContent: 'flex-end',
+    },
+    mealFooterImage: {
+      resizeMode: 'cover',
+    },
+    mealFooterOverlay: {
+      ...StyleSheet.absoluteFillObject,
+      backgroundColor: 'rgba(255, 248, 242, 0.22)',
+    },
+    mealFooterContent: {
+      margin: 14,
+      borderRadius: 18,
+      backgroundColor: 'rgba(255, 255, 255, 0.78)',
+      paddingHorizontal: 18,
+      paddingVertical: 18,
+    },
+    mealFooterKicker: {
+      color: CYAN,
+      fontSize: 10,
+      fontWeight: '900',
+      letterSpacing: 1,
+    },
+    mealFooterTitle: {
+      color: TEXT,
+      fontSize: 20,
+      fontWeight: '900',
+      marginTop: 6,
+    },
+    mealFooterText: {
+      color: MUTED,
+      fontSize: 12,
+      lineHeight: 18,
+      marginTop: 8,
+    },
     languageOverlay: {
       flex: 1,
       backgroundColor:
@@ -1800,7 +1864,7 @@ const styles =
       borderTopRightRadius: 26,
       borderTopWidth: 1,
       borderTopColor:
-        'rgba(99, 201, 52, 0.28)',
+        'rgba(255, 106, 33, 0.28)',
       paddingTop: 10,
       paddingHorizontal: 12,
     },
@@ -1810,7 +1874,7 @@ const styles =
       height: 5,
       borderRadius: 999,
       backgroundColor:
-        'rgba(109, 120, 111, 0.42)',
+        'rgba(120, 105, 95, 0.42)',
       marginBottom: 14,
     },
     sheetKicker: {
@@ -1852,9 +1916,9 @@ const styles =
     },
     languageItemActive: {
       backgroundColor:
-        'rgba(99, 201, 52, 0.08)',
+        'rgba(255, 106, 33, 0.08)',
       borderColor:
-        'rgba(99, 201, 52, 0.38)',
+        'rgba(255, 106, 33, 0.38)',
     },
     languageCode: {
       width: 39,
@@ -1879,7 +1943,7 @@ const styles =
     },
     languageName: {
       flex: 1,
-      color: '#455047',
+      color: '#5F544D',
       fontSize: 13,
       fontWeight: '800',
     },
@@ -1988,7 +2052,7 @@ const styles =
       borderRadius: 18,
       borderWidth: 1,
       borderColor:
-        'rgba(109, 120, 111, 0.18)',
+        'rgba(120, 105, 95, 0.18)',
       padding: 10,
       alignItems: 'center',
     },
@@ -1999,10 +2063,10 @@ const styles =
       alignItems: 'center',
       justifyContent: 'center',
       backgroundColor:
-        'rgba(99, 201, 52, 0.10)',
+        'rgba(255, 106, 33, 0.10)',
       borderWidth: 1,
       borderColor:
-        'rgba(99, 201, 52, 0.26)',
+        'rgba(255, 106, 33, 0.26)',
     },
     timeButtonText: {
       color: NEON,
@@ -2053,7 +2117,7 @@ const styles =
       marginRight: 4,
     },
     quickTimeText: {
-      color: '#526057',
+      color: '#6E5F55',
       fontSize: 11,
       fontWeight: '900',
     },
@@ -2076,7 +2140,7 @@ const styles =
     reminderCancel: {
       backgroundColor: CARD_2,
       borderColor:
-        'rgba(109, 120, 111, 0.22)',
+        'rgba(120, 105, 95, 0.22)',
     },
     reminderDisable: {
       backgroundColor:
@@ -2089,7 +2153,7 @@ const styles =
       borderColor: NEON,
     },
     reminderCancelText: {
-      color: '#455047',
+      color: '#5F544D',
       fontSize: 11,
       fontWeight: '900',
     },
@@ -2099,7 +2163,7 @@ const styles =
       fontWeight: '900',
     },
     reminderSaveText: {
-      color: '#10230F',
+      color: '#FFFFFF',
       fontSize: 11,
       fontWeight: '900',
     },

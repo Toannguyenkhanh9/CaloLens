@@ -1,4 +1,6 @@
 // FILE: src/screens/GuideScreen.tsx
+import FoodAccentCard from '../components/FoodAccentCard';
+import HeroFoodCornerAccent from '../components/HeroFoodCornerAccent';
 import React from 'react';
 import {
   Image,
@@ -33,13 +35,13 @@ const STEP_IMAGES = {
     ),
 };
 
-const BG = '#F5F8F2';
+const BG = '#FFF8F2';
 const CARD = '#FFFFFF';
-const TEXT = '#17211A';
-const MUTED = '#6D786F';
-const NEON = '#63C934';
-const CYAN = '#18A39B';
-const BORDER = '#DDE8D9';
+const TEXT = '#21170F';
+const MUTED = '#78695F';
+const NEON = '#FF6A21';
+const CYAN = '#F29132';
+const BORDER = '#F1D9C8';
 
 type StepCardProps = {
   step: string;
@@ -101,6 +103,8 @@ React.FC = () => {
         barStyle="dark-content"
         backgroundColor={BG}
       />
+
+      <HeroFoodCornerAccent />
 
       <View
         pointerEvents="none"
@@ -233,6 +237,8 @@ React.FC = () => {
             </Text>
           </View>
         </View>
+
+        <FoodAccentCard variant="guidance" height={170} />
       </ScrollView>
     </View>
   );
@@ -260,7 +266,7 @@ const styles =
       height: 260,
       borderRadius: 130,
       backgroundColor:
-        'rgba(24, 163, 155, 0.08)',
+        'rgba(242, 145, 50, 0.08)',
     },
     glowBottom: {
       position: 'absolute',
@@ -270,7 +276,7 @@ const styles =
       height: 250,
       borderRadius: 125,
       backgroundColor:
-        'rgba(99, 201, 52, 0.08)',
+        'rgba(255, 106, 33, 0.08)',
     },
     hero: {
       paddingHorizontal: 5,
@@ -283,9 +289,9 @@ const styles =
       borderRadius: 999,
       borderWidth: 1,
       borderColor:
-        'rgba(24, 163, 155, 0.30)',
+        'rgba(242, 145, 50, 0.30)',
       backgroundColor:
-        'rgba(24, 163, 155, 0.08)',
+        'rgba(242, 145, 50, 0.08)',
       marginBottom: 14,
     },
     kickerText: {
@@ -314,7 +320,7 @@ const styles =
       borderColor: BORDER,
       padding: 15,
       marginBottom: 12,
-      shadowColor: '#879487',
+      shadowColor: '#C28A66',
       shadowOpacity: 0.08,
       shadowRadius: 11,
       shadowOffset: {
@@ -331,9 +337,9 @@ const styles =
     },
     stepBadge: {
       backgroundColor:
-        'rgba(99, 201, 52, 0.10)',
+        'rgba(255, 106, 33, 0.10)',
       borderColor:
-        'rgba(99, 201, 52, 0.30)',
+        'rgba(255, 106, 33, 0.30)',
       borderWidth: 1,
       paddingHorizontal: 11,
       paddingVertical: 6,
@@ -354,7 +360,7 @@ const styles =
       justifyContent: 'center',
     },
     stepIconText: {
-      color: '#10230F',
+      color: '#FFFFFF',
       fontSize: 17,
       fontWeight: '900',
     },
@@ -375,7 +381,7 @@ const styles =
       height: 185,
       borderRadius: 17,
       overflow: 'hidden',
-      backgroundColor: '#EEF4EA',
+      backgroundColor: '#FFF3E8',
       borderWidth: 1,
       borderColor: BORDER,
     },

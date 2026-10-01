@@ -1,4 +1,6 @@
 // FILE: src/screens/QuickAddScreen.tsx
+import FoodAccentCard from '../components/FoodAccentCard';
+import HeroFoodCornerAccent from '../components/HeroFoodCornerAccent';
 import React from 'react';
 import {
   ScrollView,
@@ -17,15 +19,15 @@ import {
 
 import '../i18n/caloLensFoodToolsTranslations';
 
-const BG = '#F5F8F2';
+const BG = '#FFF8F2';
 const CARD = '#FFFFFF';
-const TEXT = '#17211A';
-const MUTED = '#6D786F';
-const NEON = '#63C934';
-const CYAN = '#18A39B';
-const BLUE = '#2B82D9';
-const YELLOW = '#D99A00';
-const BORDER = '#DDE8D9';
+const TEXT = '#21170F';
+const MUTED = '#78695F';
+const NEON = '#FF6A21';
+const CYAN = '#F29132';
+const BLUE = '#FF9350';
+const YELLOW = '#F5A623';
+const BORDER = '#F1D9C8';
 
 type ActionCardProps = {
   icon: string;
@@ -105,6 +107,8 @@ React.FC = () => {
         barStyle="dark-content"
         backgroundColor={BG}
       />
+
+      <HeroFoodCornerAccent />
 
       <View
         pointerEvents="none"
@@ -265,6 +269,8 @@ React.FC = () => {
             )}
           </Text>
         </View>
+
+        <FoodAccentCard variant="hero" height={170} />
       </ScrollView>
     </View>
   );
@@ -288,7 +294,7 @@ const styles = StyleSheet.create({
     height: 290,
     borderRadius: 145,
     backgroundColor:
-      'rgba(99, 201, 52, 0.10)',
+      'rgba(255, 106, 33, 0.10)',
   },
   hero: {
     paddingHorizontal: 5,
@@ -300,10 +306,10 @@ const styles = StyleSheet.create({
     paddingVertical: 6,
     borderRadius: 999,
     backgroundColor:
-      'rgba(24, 163, 155, 0.08)',
+      'rgba(242, 145, 50, 0.08)',
     borderWidth: 1,
     borderColor:
-      'rgba(24, 163, 155, 0.28)',
+      'rgba(242, 145, 50, 0.28)',
     marginBottom: 13,
   },
   kicker: {
@@ -336,7 +342,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 13,
     paddingVertical: 12,
     marginBottom: 9,
-    shadowColor: '#879487',
+    shadowColor: '#C28A66',
     shadowOpacity: 0.05,
     shadowRadius: 8,
     shadowOffset: {
@@ -347,7 +353,7 @@ const styles = StyleSheet.create({
   },
   actionCardPrimary: {
     borderColor:
-      'rgba(99, 201, 52, 0.34)',
+      'rgba(255, 106, 33, 0.34)',
     shadowColor: NEON,
     shadowOpacity: 0.12,
     shadowRadius: 12,

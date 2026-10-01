@@ -1,4 +1,6 @@
 // FILE: src/screens/FoodPortionScreen.tsx
+import FoodAccentCard from '../components/FoodAccentCard';
+import HeroFoodCornerAccent from '../components/HeroFoodCornerAccent';
 import React, {useMemo, useState} from 'react';
 import {
   ScrollView,
@@ -19,13 +21,13 @@ import {
   rememberFood,
 } from '../nutrition/foodLibrary';
 
-const BG = '#F5F8F2';
+const BG = '#FFF8F2';
 const CARD = '#FFFFFF';
-const TEXT = '#17211A';
-const MUTED = '#6D786F';
-const NEON = '#63C934';
-const CYAN = '#18A39B';
-const BORDER = '#DDE8D9';
+const TEXT = '#21170F';
+const MUTED = '#78695F';
+const NEON = '#FF6A21';
+const CYAN = '#F29132';
+const BORDER = '#F1D9C8';
 
 const numberValue = (value: string) => {
   const parsed = Number(value.replace(',', '.'));
@@ -59,6 +61,8 @@ export const FoodPortionScreen: React.FC = () => {
   return (
     <View style={styles.screen}>
       <StatusBar barStyle="dark-content" backgroundColor={BG} />
+
+      <HeroFoodCornerAccent />
       <ScrollView keyboardShouldPersistTaps="handled" showsVerticalScrollIndicator={false} contentContainerStyle={styles.content}>
         <View style={styles.heroIcon}>
           <Text style={styles.heroIconText}>{food.source === 'recipe' ? '🥣' : food.category === 'vietnamese' ? '🍜' : '🥗'}</Text>
@@ -137,6 +141,8 @@ export const FoodPortionScreen: React.FC = () => {
         <TouchableOpacity style={styles.continueButton} activeOpacity={0.88} onPress={continueToReview}>
           <Text style={styles.continueText}>{t('foodTools.continueReview', 'Continue to review')}</Text>
         </TouchableOpacity>
+
+        <FoodAccentCard variant="hero" height={145} compact />
       </ScrollView>
     </View>
   );
@@ -145,16 +151,16 @@ export const FoodPortionScreen: React.FC = () => {
 const styles = StyleSheet.create({
   screen: {flex: 1, backgroundColor: BG},
   content: {paddingHorizontal: 8, paddingTop: 18, paddingBottom: 140},
-  heroIcon: {width: 58, height: 58, borderRadius: 19, alignItems: 'center', justifyContent: 'center', backgroundColor: 'rgba(99,201,52,0.11)', borderWidth: 1, borderColor: 'rgba(99,201,52,0.28)', marginLeft: 5, marginBottom: 13},
+  heroIcon: {width: 58, height: 58, borderRadius: 19, alignItems: 'center', justifyContent: 'center', backgroundColor: 'rgba(255,106,33,0.11)', borderWidth: 1, borderColor: 'rgba(255,106,33,0.28)', marginLeft: 5, marginBottom: 13},
   heroIconText: {fontSize: 27},
   kicker: {color: CYAN, fontSize: 10, fontWeight: '900', letterSpacing: 1, marginHorizontal: 5},
   title: {color: TEXT, fontSize: 30, lineHeight: 36, fontWeight: '900', marginHorizontal: 5, marginTop: 5},
   subtitle: {color: MUTED, fontSize: 13, lineHeight: 20, marginHorizontal: 5, marginTop: 7, marginBottom: 15},
-  nutritionCard: {backgroundColor: CARD, borderRadius: 22, borderWidth: 1, borderColor: 'rgba(99,201,52,0.27)', padding: 16, marginBottom: 17},
+  nutritionCard: {backgroundColor: CARD, borderRadius: 22, borderWidth: 1, borderColor: 'rgba(255,106,33,0.27)', padding: 16, marginBottom: 17},
   calories: {color: NEON, fontSize: 40, lineHeight: 43, fontWeight: '900'},
   calorieUnit: {color: MUTED, fontSize: 12, fontWeight: '800'},
   macroRow: {flexDirection: 'row', marginTop: 15, marginHorizontal: -4},
-  macroItem: {flex: 1, backgroundColor: '#F4F8F1', borderRadius: 14, paddingVertical: 10, alignItems: 'center', marginHorizontal: 4},
+  macroItem: {flex: 1, backgroundColor: '#FFF7EF', borderRadius: 14, paddingVertical: 10, alignItems: 'center', marginHorizontal: 4},
   macroValue: {color: TEXT, fontSize: 14, fontWeight: '900'},
   macroLabel: {color: MUTED, fontSize: 9, fontWeight: '800', marginTop: 2},
   sectionTitle: {color: TEXT, fontSize: 17, fontWeight: '900', marginHorizontal: 5, marginBottom: 9},
@@ -162,22 +168,22 @@ const styles = StyleSheet.create({
   multiplier: {flex: 1, minHeight: 42, alignItems: 'center', justifyContent: 'center', backgroundColor: CARD, borderRadius: 14, borderWidth: 1, borderColor: BORDER, marginHorizontal: 4},
   multiplierActive: {backgroundColor: NEON, borderColor: NEON},
   multiplierText: {color: MUTED, fontSize: 12, fontWeight: '900'},
-  multiplierTextActive: {color: '#10230F'},
+  multiplierTextActive: {color: '#FFFFFF'},
   portionRow: {paddingBottom: 14},
   portionChip: {minWidth: 105, borderRadius: 16, backgroundColor: CARD, borderWidth: 1, borderColor: BORDER, paddingHorizontal: 11, paddingVertical: 10, marginRight: 8},
-  portionChipActive: {backgroundColor: 'rgba(24,163,155,0.10)', borderColor: 'rgba(24,163,155,0.32)'},
+  portionChipActive: {backgroundColor: 'rgba(242,145,50,0.10)', borderColor: 'rgba(242,145,50,0.32)'},
   portionText: {color: TEXT, fontSize: 10, fontWeight: '900'},
   portionGram: {color: MUTED, fontSize: 9, marginTop: 3},
   portionTextActive: {color: CYAN},
   inputLabel: {color: TEXT, fontSize: 12, fontWeight: '900', marginHorizontal: 5, marginBottom: 7},
-  gramInputWrap: {minHeight: 52, flexDirection: 'row', alignItems: 'center', backgroundColor: CARD, borderRadius: 16, borderWidth: 1, borderColor: 'rgba(24,163,155,0.25)', paddingHorizontal: 13},
+  gramInputWrap: {minHeight: 52, flexDirection: 'row', alignItems: 'center', backgroundColor: CARD, borderRadius: 16, borderWidth: 1, borderColor: 'rgba(242,145,50,0.25)', paddingHorizontal: 13},
   gramInput: {flex: 1, color: TEXT, fontSize: 18, fontWeight: '900', paddingVertical: 0},
   gramUnit: {color: CYAN, fontSize: 14, fontWeight: '900'},
-  per100Card: {backgroundColor: '#F0F5ED', borderRadius: 15, padding: 12, marginTop: 12},
+  per100Card: {backgroundColor: '#FFF2E8', borderRadius: 15, padding: 12, marginTop: 12},
   per100Title: {color: TEXT, fontSize: 11, fontWeight: '900'},
   per100Text: {color: MUTED, fontSize: 9, lineHeight: 15, marginTop: 4},
   continueButton: {minHeight: 52, alignItems: 'center', justifyContent: 'center', backgroundColor: NEON, borderRadius: 999, marginTop: 16},
-  continueText: {color: '#10230F', fontSize: 14, fontWeight: '900'},
+  continueText: {color: '#FFFFFF', fontSize: 14, fontWeight: '900'},
 });
 
 export default FoodPortionScreen;

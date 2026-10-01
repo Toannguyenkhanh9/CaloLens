@@ -1,4 +1,6 @@
 // FILE: src/screens/RecipeBuilderScreen.tsx
+import FoodAccentCard from '../components/FoodAccentCard';
+import HeroFoodCornerAccent from '../components/HeroFoodCornerAccent';
 import React, {useCallback, useMemo, useState} from 'react';
 import {
   Alert,
@@ -25,14 +27,14 @@ import {
   saveRecipeFood,
 } from '../nutrition/foodLibrary';
 
-const BG = '#F5F8F2';
+const BG = '#FFF8F2';
 const CARD = '#FFFFFF';
-const TEXT = '#17211A';
-const MUTED = '#6D786F';
-const NEON = '#63C934';
-const CYAN = '#18A39B';
+const TEXT = '#21170F';
+const MUTED = '#78695F';
+const NEON = '#FF6A21';
+const CYAN = '#F29132';
 const RED = '#D85E78';
-const BORDER = '#DDE8D9';
+const BORDER = '#F1D9C8';
 
 type RecipeIngredient = {
   id: string;
@@ -148,6 +150,8 @@ export const RecipeBuilderScreen: React.FC = () => {
   return (
     <View style={styles.screen}>
       <StatusBar barStyle="dark-content" backgroundColor={BG} />
+
+      <HeroFoodCornerAccent />
       <ScrollView keyboardShouldPersistTaps="handled" showsVerticalScrollIndicator={false} contentContainerStyle={styles.content}>
         <Text style={styles.kicker}>{t('foodTools.recipeKicker', 'RECIPE BUILDER')}</Text>
         <Text style={styles.title}>{t('foodTools.recipeTitle', 'Calculate a recipe per serving')}</Text>
@@ -224,6 +228,8 @@ export const RecipeBuilderScreen: React.FC = () => {
         <TouchableOpacity style={[styles.saveButton, saving && styles.disabled]} onPress={save} disabled={saving}>
           <Text style={styles.saveText}>{saving ? t('common.saving', 'Saving…') : t('foodTools.saveRecipe', 'Save recipe')}</Text>
         </TouchableOpacity>
+
+        <FoodAccentCard variant="hero" height={150} compact />
       </ScrollView>
 
       <Modal visible={pickerVisible} transparent animationType="slide" onRequestClose={() => setPickerVisible(false)}>
@@ -267,8 +273,8 @@ const styles = StyleSheet.create({
   input: {minHeight: 48, borderRadius: 14, borderWidth: 1, borderColor: BORDER, backgroundColor: BG, color: TEXT, paddingHorizontal: 12, marginBottom: 11},
   sectionHeader: {flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: 5, marginBottom: 9},
   sectionTitle: {color: TEXT, fontSize: 18, fontWeight: '900'},
-  addIngredientButton: {paddingHorizontal: 11, paddingVertical: 8, borderRadius: 999, backgroundColor: 'rgba(99,201,52,0.11)', borderWidth: 1, borderColor: 'rgba(99,201,52,0.27)'},
-  addIngredientText: {color: '#4F9E2A', fontSize: 10, fontWeight: '900'},
+  addIngredientButton: {paddingHorizontal: 11, paddingVertical: 8, borderRadius: 999, backgroundColor: 'rgba(255,106,33,0.11)', borderWidth: 1, borderColor: 'rgba(255,106,33,0.27)'},
+  addIngredientText: {color: '#E85A18', fontSize: 10, fontWeight: '900'},
   ingredientCard: {backgroundColor: CARD, borderRadius: 17, borderWidth: 1, borderColor: BORDER, padding: 12, marginBottom: 8},
   ingredientHeader: {flexDirection: 'row', alignItems: 'center'},
   ingredientBody: {flex: 1},
@@ -278,23 +284,23 @@ const styles = StyleSheet.create({
   gramRow: {minHeight: 42, flexDirection: 'row', alignItems: 'center', backgroundColor: BG, borderRadius: 12, borderWidth: 1, borderColor: BORDER, paddingHorizontal: 10, marginTop: 9},
   gramInput: {flex: 1, color: TEXT, fontSize: 14, fontWeight: '900', paddingVertical: 0},
   gramUnit: {color: CYAN, fontSize: 11, fontWeight: '900'},
-  emptyCard: {backgroundColor: CARD, borderRadius: 19, borderWidth: 1, borderColor: 'rgba(99,201,52,0.22)', padding: 20, alignItems: 'center', marginBottom: 12},
+  emptyCard: {backgroundColor: CARD, borderRadius: 19, borderWidth: 1, borderColor: 'rgba(255,106,33,0.22)', padding: 20, alignItems: 'center', marginBottom: 12},
   emptyIcon: {fontSize: 35},
   emptyTitle: {color: TEXT, fontSize: 16, fontWeight: '900', marginTop: 8},
   emptyText: {color: MUTED, fontSize: 10, lineHeight: 16, textAlign: 'center', marginTop: 5},
-  totalCard: {backgroundColor: 'rgba(99,201,52,0.10)', borderRadius: 20, borderWidth: 1, borderColor: 'rgba(99,201,52,0.27)', padding: 15, marginTop: 5},
+  totalCard: {backgroundColor: 'rgba(255,106,33,0.10)', borderRadius: 20, borderWidth: 1, borderColor: 'rgba(255,106,33,0.27)', padding: 15, marginTop: 5},
   totalKicker: {color: CYAN, fontSize: 9, fontWeight: '900', letterSpacing: 0.9},
   totalCalories: {color: NEON, fontSize: 31, fontWeight: '900', marginTop: 4},
   totalMacros: {color: TEXT, fontSize: 11, fontWeight: '900', marginTop: 4},
   totalMeta: {color: MUTED, fontSize: 9, marginTop: 5},
   saveButton: {minHeight: 52, alignItems: 'center', justifyContent: 'center', backgroundColor: NEON, borderRadius: 999, marginTop: 15},
-  saveText: {color: '#10230F', fontSize: 14, fontWeight: '900'},
+  saveText: {color: '#FFFFFF', fontSize: 14, fontWeight: '900'},
   disabled: {opacity: 0.6},
-  overlay: {flex: 1, justifyContent: 'flex-end', backgroundColor: 'rgba(27,37,29,0.30)'},
-  sheet: {height: '82%', backgroundColor: BG, borderTopLeftRadius: 25, borderTopRightRadius: 25, borderTopWidth: 1, borderColor: 'rgba(99,201,52,0.25)', paddingHorizontal: 12, paddingTop: 10, paddingBottom: 20},
-  handle: {width: 44, height: 5, borderRadius: 999, backgroundColor: 'rgba(109,120,111,0.40)', alignSelf: 'center', marginBottom: 14},
+  overlay: {flex: 1, justifyContent: 'flex-end', backgroundColor: 'rgba(73, 39, 21, 0.34)'},
+  sheet: {height: '82%', backgroundColor: BG, borderTopLeftRadius: 25, borderTopRightRadius: 25, borderTopWidth: 1, borderColor: 'rgba(255,106,33,0.25)', paddingHorizontal: 12, paddingTop: 10, paddingBottom: 20},
+  handle: {width: 44, height: 5, borderRadius: 999, backgroundColor: 'rgba(120,105,95,0.40)', alignSelf: 'center', marginBottom: 14},
   sheetTitle: {color: TEXT, fontSize: 21, fontWeight: '900', marginBottom: 10},
-  sheetSearch: {minHeight: 48, borderRadius: 14, backgroundColor: CARD, borderWidth: 1, borderColor: 'rgba(24,163,155,0.24)', color: TEXT, paddingHorizontal: 12, marginBottom: 10},
+  sheetSearch: {minHeight: 48, borderRadius: 14, backgroundColor: CARD, borderWidth: 1, borderColor: 'rgba(242,145,50,0.24)', color: TEXT, paddingHorizontal: 12, marginBottom: 10},
   pickerRow: {minHeight: 62, flexDirection: 'row', alignItems: 'center', backgroundColor: CARD, borderRadius: 15, borderWidth: 1, borderColor: BORDER, paddingHorizontal: 12, marginBottom: 7},
   pickerBody: {flex: 1},
   pickerName: {color: TEXT, fontSize: 12, fontWeight: '900'},

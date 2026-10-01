@@ -26,10 +26,10 @@ import {
   type FrequentMeal,
 } from '../nutrition/mealFavorites';
 
-const TEXT = '#17211A';
-const MUTED = '#6D786F';
-const NEON = '#63C934';
-const CYAN = '#18A39B';
+const TEXT = '#21170F';
+const MUTED = '#78695F';
+const NEON = '#FF5A1F';
+const CYAN = '#F47B35';
 
 export const FrequentMealsCard:
 React.FC = () => {
@@ -228,7 +228,7 @@ const styles =
       flexDirection: 'row',
       alignItems: 'center',
       borderTopWidth: 1,
-      borderTopColor: '#E8EEE5',
+      borderTopColor: '#F3E8E0',
       paddingVertical: 9,
     },
     rowIcon: {
@@ -238,7 +238,7 @@ const styles =
       alignItems: 'center',
       justifyContent: 'center',
       backgroundColor:
-        'rgba(99, 201, 52, 0.09)',
+        'rgba(255, 90, 31, 0.09)',
       marginRight: 9,
     },
     rowIconText: {
@@ -264,14 +264,14 @@ const styles =
       borderRadius: 999,
       alignItems: 'center',
       backgroundColor:
-        'rgba(99, 201, 52, 0.12)',
+        'rgba(255, 90, 31, 0.12)',
       borderWidth: 1,
       borderColor:
-        'rgba(99, 201, 52, 0.28)',
+        'rgba(255, 90, 31, 0.28)',
       marginLeft: 8,
     },
     addText: {
-      color: '#4F9E2A',
+      color: '#E95018',
       fontSize: 10,
       fontWeight: '900',
     },

@@ -18,6 +18,7 @@ import {
   TouchableOpacity,
   View,
 } from 'react-native';
+import HeroFoodCornerAccent from '../components/HeroFoodCornerAccent';
 import {
   SafeAreaView,
 } from 'react-native-safe-area-context';
@@ -99,15 +100,15 @@ const BMI_KEY =
 const RECO_KEY =
   'user:recommendation';
 
-const BG = '#F5F8F2';
+const BG = '#FFF8F2';
 const CARD = '#FFFFFF';
-const SOFT = '#F0F5ED';
-const TEXT = '#17211A';
-const MUTED = '#6D786F';
-const GREEN = '#63C934';
-const TEAL = '#18A39B';
-const BORDER = '#DDE8D9';
-const WARNING = '#D99A00';
+const SOFT = '#FFF2E8';
+const TEXT = '#21170F';
+const MUTED = '#78695F';
+const GREEN = '#FF6A21';
+const TEAL = '#F29132';
+const BORDER = '#F1D9C8';
+const WARNING = '#F5A623';
 
 const SUPPORTED_LANGUAGES:
 LanguageOption[] = [
@@ -866,6 +867,8 @@ export default function OnboardingProfileScreen({
           barStyle="dark-content"
           backgroundColor={BG}
         />
+
+      <HeroFoodCornerAccent />
 
         <View style={styles.loading}>
           <View style={styles.logoMark}>
@@ -1994,7 +1997,7 @@ const styles =
       height: 280,
       borderRadius: 140,
       backgroundColor:
-        'rgba(24, 163, 155, 0.08)',
+        'rgba(242, 145, 50, 0.08)',
     },
     glowBottom: {
       position: 'absolute',
@@ -2004,7 +2007,7 @@ const styles =
       height: 280,
       borderRadius: 140,
       backgroundColor:
-        'rgba(99, 201, 52, 0.08)',
+        'rgba(255, 106, 33, 0.08)',
     },
     loading: {
       flex: 1,
@@ -2018,10 +2021,10 @@ const styles =
       alignItems: 'center',
       justifyContent: 'center',
       backgroundColor:
-        'rgba(99, 201, 52, 0.12)',
+        'rgba(255, 106, 33, 0.12)',
       borderWidth: 1,
       borderColor:
-        'rgba(99, 201, 52, 0.30)',
+        'rgba(255, 106, 33, 0.30)',
       marginBottom: 18,
     },
     logoMarkText: {
@@ -2130,7 +2133,7 @@ const styles =
       height: 6,
       borderRadius: 999,
       overflow: 'hidden',
-      backgroundColor: '#E5ECE2',
+      backgroundColor: '#F6E8DC',
       marginTop: 10,
     },
     progressFill: {
@@ -2151,7 +2154,7 @@ const styles =
       borderRadius: 22,
       borderWidth: 1,
       borderColor:
-        'rgba(24, 163, 155, 0.18)',
+        'rgba(242, 145, 50, 0.18)',
       padding: 14,
       marginBottom: 11,
     },
@@ -2162,10 +2165,10 @@ const styles =
       alignItems: 'center',
       justifyContent: 'center',
       backgroundColor:
-        'rgba(99, 201, 52, 0.11)',
+        'rgba(255, 106, 33, 0.11)',
       borderWidth: 1,
       borderColor:
-        'rgba(99, 201, 52, 0.25)',
+        'rgba(255, 106, 33, 0.25)',
       marginRight: 12,
     },
     heroIconText: {
@@ -2199,7 +2202,7 @@ const styles =
       padding: 15,
       borderWidth: 1,
       borderColor: BORDER,
-      shadowColor: '#879487',
+      shadowColor: '#C28A66',
       shadowOpacity: 0.08,
       shadowRadius: 12,
       shadowOffset: {
@@ -2230,7 +2233,7 @@ const styles =
     },
     input: {
       minHeight: 49,
-      backgroundColor: '#F7FAF5',
+      backgroundColor: '#FFFBF7',
       borderRadius: 15,
       borderWidth: 1,
       borderColor: BORDER,
@@ -2247,7 +2250,7 @@ const styles =
     },
     segment: {
       flexDirection: 'row',
-      backgroundColor: '#F7FAF5',
+      backgroundColor: '#FFFBF7',
       borderRadius: 15,
       padding: 3,
       borderWidth: 1,
@@ -2283,11 +2286,11 @@ const styles =
       flexDirection: 'row',
       alignItems: 'center',
       backgroundColor:
-        'rgba(24, 163, 155, 0.07)',
+        'rgba(242, 145, 50, 0.07)',
       borderRadius: 14,
       borderWidth: 1,
       borderColor:
-        'rgba(24, 163, 155, 0.18)',
+        'rgba(242, 145, 50, 0.18)',
       padding: 10,
     },
     privacyIcon: {
@@ -2313,11 +2316,11 @@ const styles =
       flexDirection: 'row',
       alignItems: 'center',
       backgroundColor:
-        'rgba(24, 163, 155, 0.07)',
+        'rgba(242, 145, 50, 0.07)',
       borderRadius: 16,
       borderWidth: 1,
       borderColor:
-        'rgba(24, 163, 155, 0.20)',
+        'rgba(242, 145, 50, 0.20)',
       padding: 11,
       marginBottom: 12,
     },
@@ -2328,7 +2331,7 @@ const styles =
       alignItems: 'center',
       justifyContent: 'center',
       backgroundColor:
-        'rgba(24, 163, 155, 0.11)',
+        'rgba(242, 145, 50, 0.11)',
       marginRight: 9,
     },
     infoIconText: {
@@ -2353,7 +2356,7 @@ const styles =
     switchRow: {
       flexDirection: 'row',
       alignItems: 'center',
-      backgroundColor: '#F7FAF5',
+      backgroundColor: '#FFFBF7',
       borderRadius: 16,
       padding: 12,
       borderWidth: 1,
@@ -2379,13 +2382,13 @@ const styles =
       width: 52,
       height: 31,
       borderRadius: 999,
-      backgroundColor: '#D9E2D6',
+      backgroundColor: '#F0D7C5',
       padding: 3,
       justifyContent: 'center',
     },
     switchOn: {
       backgroundColor:
-        'rgba(99, 201, 52, 0.40)',
+        'rgba(255, 106, 33, 0.40)',
     },
     switchDot: {
       width: 25,
@@ -2425,16 +2428,16 @@ const styles =
       borderRadius: 17,
       borderWidth: 1,
       borderColor: BORDER,
-      backgroundColor: '#F7FAF5',
+      backgroundColor: '#FFFBF7',
       padding: 11,
       marginHorizontal: 4,
       marginBottom: 8,
     },
     goalCardActive: {
       backgroundColor:
-        'rgba(99, 201, 52, 0.11)',
+        'rgba(255, 106, 33, 0.11)',
       borderColor:
-        'rgba(99, 201, 52, 0.42)',
+        'rgba(255, 106, 33, 0.42)',
     },
     goalIcon: {
       width: 37,
@@ -2463,7 +2466,7 @@ const styles =
       paddingRight: 18,
     },
     goalTextActive: {
-      color: '#2E6E17',
+      color: '#E85A18',
     },
     goalCheck: {
       position: 'absolute',
@@ -2574,7 +2577,7 @@ const styles =
       fontWeight: '900',
     },
     disabledButton: {
-      backgroundColor: '#E7ECE4',
+      backgroundColor: '#F6E9DE',
       borderColor: '#DCE4D9',
       marginLeft: 5,
     },
@@ -2660,7 +2663,7 @@ const styles =
       minHeight: 58,
       flexDirection: 'row',
       alignItems: 'center',
-      backgroundColor: '#F7FAF5',
+      backgroundColor: '#FFFBF7',
       borderRadius: 16,
       borderWidth: 1,
       borderColor: BORDER,
@@ -2669,9 +2672,9 @@ const styles =
     },
     languageItemActive: {
       backgroundColor:
-        'rgba(99, 201, 52, 0.11)',
+        'rgba(255, 106, 33, 0.11)',
       borderColor:
-        'rgba(99, 201, 52, 0.45)',
+        'rgba(255, 106, 33, 0.45)',
     },
     languageItemFlag: {
       width: 32,
@@ -2687,7 +2690,7 @@ const styles =
       fontWeight: '800',
     },
     languageItemLabelActive: {
-      color: '#2E6E17',
+      color: '#E85A18',
       fontWeight: '900',
     },
     languageItemCode: {
@@ -2735,7 +2738,7 @@ const styles =
       padding: 18,
       borderWidth: 1,
       borderColor:
-        'rgba(99, 201, 52, 0.32)',
+        'rgba(255, 106, 33, 0.32)',
       shadowColor: '#536056',
       shadowOpacity: 0.18,
       shadowRadius: 24,
@@ -2807,10 +2810,10 @@ const styles =
       paddingHorizontal: 11,
       paddingVertical: 7,
       backgroundColor:
-        'rgba(24, 163, 155, 0.09)',
+        'rgba(242, 145, 50, 0.09)',
       borderWidth: 1,
       borderColor:
-        'rgba(24, 163, 155, 0.24)',
+        'rgba(242, 145, 50, 0.24)',
     },
     bmiPillText: {
       color: TEAL,
@@ -2820,7 +2823,7 @@ const styles =
     },
     adviceCard: {
       marginTop: 11,
-      backgroundColor: '#F7FAF5',
+      backgroundColor: '#FFFBF7',
       borderRadius: 16,
       padding: 12,
       borderWidth: 1,
@@ -2836,7 +2839,7 @@ const styles =
       maxHeight: 170,
     },
     adviceText: {
-      color: '#455047',
+      color: '#5F544D',
       fontSize: 10,
       lineHeight: 16,
     },
