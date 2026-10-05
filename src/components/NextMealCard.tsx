@@ -5,6 +5,8 @@ import React, {
   useState,
 } from 'react';
 import {
+  Image,
+  type ImageSourcePropType,
   StyleSheet,
   Text,
   TouchableOpacity,
@@ -39,6 +41,38 @@ const MUTED = '#78695F';
 const NEON = '#FF5A1F';
 const CYAN = '#F47B35';
 const BORDER = '#F0DDD0';
+
+// Reuse TastePilot's bundled food artwork so CaloLens can show a visual
+// preview without any network request. The mapping is based on the stable
+// CaloLens meal option id, so it keeps working when the UI language changes.
+const NEXT_MEAL_IMAGES: Record<string, ImageSourcePropType> = {
+  bf_1: require('../tastepilot/assets/food-icons/ru_guryev_porridge.png'),
+  bf_2: require('../tastepilot/assets/food-icons/au_avocado_toast.png'),
+  bf_3: require('../tastepilot/assets/food-icons/gl_050_tropical_yogurt_cup.png'),
+  bf_4: require('../tastepilot/assets/stage8/food/default_icon.png'),
+
+  ln_1: require('../tastepilot/assets/food-icons/gl_026_herb_chicken_rice.png'),
+  ln_2: require('../tastepilot/assets/food-icons/gl_033_steak_rice_plate.png'),
+  ln_3: require('../tastepilot/assets/food-icons/gl_022_braised_tofu_bowl.png'),
+  ln_4: require('../tastepilot/assets/food-icons/wrap.png'),
+
+  dn_1: require('../tastepilot/assets/food-icons/fr_nicoise_salad.png'),
+  dn_2: require('../tastepilot/assets/food-icons/gl_089_braised_beef_grain_bowl.png'),
+  dn_3: require('../tastepilot/assets/food-icons/ma_fish_chermoula.png'),
+  dn_4: require('../tastepilot/assets/food-icons/it_pesto_pasta.png'),
+
+  sn_1: require('../tastepilot/assets/food-icons/gl_050_tropical_yogurt_cup.png'),
+  sn_2: require('../tastepilot/assets/stage8/food/default_icon.png'),
+  sn_3: require('../tastepilot/assets/stage8/food/dessert_icon.png'),
+  sn_4: require('../tastepilot/assets/food-icons/et_ayib_cheese.png'),
+};
+
+const FALLBACK_MEAL_IMAGE: ImageSourcePropType =
+  require('../tastepilot/assets/stage8/food/default_icon.png');
+
+const getNextMealImage = (mealId: string): ImageSourcePropType =>
+  NEXT_MEAL_IMAGES[mealId] || FALLBACK_MEAL_IMAGE;
+
 
 export const NextMealCard:
 React.FC<{
@@ -216,6 +250,14 @@ React.FC<{
             key={suggestion.id}
             style={styles.suggestion}
           >
+            <View style={styles.suggestionImageWrap}>
+              <Image
+                source={getNextMealImage(suggestion.id)}
+                style={styles.suggestionImage}
+                resizeMode="cover"
+              />
+            </View>
+
             <View style={styles.suggestionBody}>
               <Text style={styles.suggestionTitle}>
                 {suggestion.title}
@@ -373,8 +415,31 @@ const styles =
       borderTopColor: '#F3E8E0',
       paddingVertical: 10,
     },
+    suggestionImageWrap: {
+      width: 64,
+      height: 64,
+      borderRadius: 16,
+      overflow: 'hidden',
+      backgroundColor: '#FFF6EF',
+      borderWidth: 1,
+      borderColor: 'rgba(244, 123, 53, 0.18)',
+      marginRight: 10,
+      shadowColor: '#A66A45',
+      shadowOpacity: 0.08,
+      shadowRadius: 5,
+      shadowOffset: {
+        width: 0,
+        height: 2,
+      },
+      elevation: 1,
+    },
+    suggestionImage: {
+      width: '100%',
+      height: '100%',
+    },
     suggestionBody: {
       flex: 1,
+      minWidth: 0,
     },
     suggestionTitle: {
       color: TEXT,
